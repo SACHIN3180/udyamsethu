@@ -406,7 +406,9 @@ const Home = () => {
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
 
-              <button className="group flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700">
+              <button
+                onClick={() => navigate('/udyamsethu/institution-login')}
+                className="group flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-xl shadow-blue-600/20 transition hover:-translate-y-0.5 hover:bg-blue-700">
 
                 Get Started
 
@@ -491,32 +493,33 @@ const Home = () => {
                 </div>
 
                 {/* Student */}
+                <button
+                  onClick={() => navigate('/udyamsethu/login')}
+                  className="cursor-pointer">
+                  <div className="flex items-center gap-4 rounded-2xl border border-blue-50 bg-[#F7F9FC] p-4">
 
-                <div className="flex items-center gap-4 rounded-2xl border border-blue-50 bg-[#F7F9FC] p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100">
+                      <GraduationCap
+                        size={23}
+                        className="text-blue-600"
+                      />
 
-                    <GraduationCap
-                      size={23}
-                      className="text-blue-600"
-                    />
+                    </div>
+
+                    <div>
+
+
+                      <p className="font-semibold">
+                        Student
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        Skills & Potential
+                      </p>
+                    </div>
 
                   </div>
-
-                  <div>
-
-                    <p className="font-semibold">
-                      Student
-                    </p>
-
-                    <p className="text-sm text-slate-500">
-                      Skills & Potential
-                    </p>
-
-                  </div>
-
-                </div>
-
+                </button>
                 {/* Bridge */}
 
                 <div className="relative my-5 flex items-center justify-center">
@@ -530,31 +533,34 @@ const Home = () => {
                 </div>
 
                 {/* Employer */}
+                <button
+                  onClick={() => navigate('/udyamsethu/employer-login')}
+                  className="cursor-pointer">
+                  <div className="flex items-center gap-4 rounded-2xl border border-indigo-50 bg-[#F7F9FC] p-4">
 
-                <div className="flex items-center gap-4 rounded-2xl border border-indigo-50 bg-[#F7F9FC] p-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100">
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-100">
+                      <Building2
+                        size={23}
+                        className="text-indigo-600"
+                      />
 
-                    <Building2
-                      size={23}
-                      className="text-indigo-600"
-                    />
+                    </div>
+
+                    <div>
+
+                      <p className="font-semibold">
+                        Employer
+                      </p>
+
+                      <p className="text-sm text-slate-500">
+                        Career Opportunities
+                      </p>
+
+                    </div>
 
                   </div>
-
-                  <div>
-
-                    <p className="font-semibold">
-                      Employer
-                    </p>
-
-                    <p className="text-sm text-slate-500">
-                      Career Opportunities
-                    </p>
-
-                  </div>
-
-                </div>
+                </button>
 
                 <div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-center">
 
@@ -958,7 +964,9 @@ const Home = () => {
 
                 </p>
 
-                <button className="mt-7 flex items-center gap-2 font-semibold text-blue-600">
+                <button
+                  onClick={() => navigate('/udyamsethu/login')}
+                  className="mt-7 flex items-center cursor-pointer gap-2 font-semibold text-blue-600">
 
                   Explore Careers
 
@@ -999,7 +1007,9 @@ const Home = () => {
 
                 </p>
 
-                <button className="mt-7 flex items-center gap-2 font-semibold text-indigo-600">
+                <button
+                  onClick={() => navigate('/udyamsethu/employer-login')}
+                  className="mt-7 cursor-pointer flex items-center gap-2 font-semibold text-indigo-600">
 
                   Find Talent
 
@@ -1012,6 +1022,7 @@ const Home = () => {
               <div className="absolute -bottom-24 -right-24 h-64 w-64 rounded-full bg-indigo-100/60 transition group-hover:scale-110" />
 
             </div>
+
 
           </div>
 

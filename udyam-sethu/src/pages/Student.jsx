@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import logo from "../assets/logo.jpeg";
 import {
   LayoutDashboard,
@@ -13,12 +14,10 @@ import {
   GraduationCap,
   ClipboardCheck,
   BriefcaseBusiness,
-  CalendarDays,
   TrendingUp,
   Award,
   Clock3,
   CheckCircle2,
-  AlertCircle,
   ArrowUpRight,
   Settings,
   Moon,
@@ -26,11 +25,14 @@ import {
   Target,
   Building2,
   MapPin,
-  ExternalLink,
   BarChart3,
   LogOut,
+  Sparkles,
+  CalendarDays,
+  ExternalLink,
+  Activity,
+  ShieldCheck,
 } from "lucide-react";
-
 import {
   AreaChart,
   Area,
@@ -42,244 +44,10 @@ import {
 } from "recharts";
 import { useNavigate, useLocation } from "react-router-dom";
 
-
-
 /* =========================================================
-   TRANSLATIONS
-========================================================= */
-
-const translations = {
-  English: {
-    studentPortal: "Student Portal",
-    studentWorkspace: "Student Workspace",
-
-    overview: "Overview",
-    findOpportunities: "Find Opportunities",
-    myApplications: "My Applications",
-    savedOpportunities: "Saved Opportunities",
-    assessments: "Assessments",
-    mySkills: "My Skills",
-    academicPerformance: "Academic Performance",
-
-    account: "Account",
-    myProfile: "My Profile",
-    settings: "Settings",
-
-    searchPlaceholder:
-      "Search Job opportunities, companies, skills...",
-
-    studentDashboard: "Student Dashboard",
-
-    welcome: "Welcome back,  👋",
-
-    dashboardDescription:
-      "Track your academic progress, skills and career opportunities.",
-
-    exploreOpportunities: "Explore Opportunities",
-
-    currentCGPA: "Current CGPA",
-    outOf10: "Out of 10",
-
-    attendance: "Attendance",
-    overallAttendance: "Overall attendance",
-
-    assessmentsTitle: "Assessments",
-    assessmentsCompleted: "Completed",
-
-    applications: "Applications",
-    activeApplications: "Active applications",
-
-    completeProfile: "Complete your student profile",
-
-    profileDescription:
-      "Add your education, skills, resume and projects.",
-
-    completeProfileButton: "Complete Profile",
-
-    academicPerformanceTitle: "Academic Performance",
-
-    performanceSubtitle:
-      "Your performance trend over the semester",
-
-    attendanceTitle: "Attendance",
-    attendanceSubtitle: "Subject-wise attendance",
-
-    upcomingEvents: "Upcoming Events",
-    upcomingEventsSubtitle: "Important dates for you",
-
-    skillsProgress: "Skills Progress",
-    skillsSubtitle: "Your current skill development",
-
-    careerReadiness: "Career Readiness",
-    careerSubtitle: "Your placement readiness",
-
-    ready: "Ready",
-
-    recommendedOpportunities: "Recommended Opportunities",
-
-    recommendedSubtitle:
-      "Opportunities matching your education and skills",
-
-    viewAllOpportunities: "View all opportunities",
-
-    recentApplications: "Recent Applications",
-
-    recentApplicationsSubtitle:
-      "Latest application activity",
-
-    quickActions: "Quick Actions",
-
-    quickActionsSubtitle:
-      "Manage your student profile",
-
-    updateProfile: "Update Profile",
-    uploadResume: "Upload Resume",
-    takeAssessment: "Take Assessment",
-    viewCertificates: "View Certificates",
-    findInternship: "Find Internship",
-    viewPerformance: "View Performance",
-
-    profile: "Profile",
-    resume: "Resume",
-    skills: "Skills",
-
-    complete: "Complete",
-    uploaded: "Uploaded",
-    good: "Good",
-
-    placement: "Placement",
-    assessment: "Assessment",
-    workshop: "Workshop",
-
-    deadline: "Deadline",
-
-    shortlisted: "Shortlisted",
-    underReview: "Under Review",
-    applied: "Applied",
-    rejected: "Rejected",
-
-    readyStatus: "Ready",
-
-    switchLanguage: "Language",
-  },
-
-  Kannada: {
-    studentPortal: "ವಿದ್ಯಾರ್ಥಿ ಪೋರ್ಟಲ್",
-    studentWorkspace: "ವಿದ್ಯಾರ್ಥಿ ಕಾರ್ಯಕ್ಷೇತ್ರ",
-
-    overview: "ಅವಲೋಕನ",
-    findOpportunities: "ಅವಕಾಶಗಳನ್ನು ಹುಡುಕಿ",
-    myApplications: "ನನ್ನ ಅರ್ಜಿಗಳು",
-    savedOpportunities: "ಉಳಿಸಿದ ಅವಕಾಶಗಳು",
-    assessments: "ಮೌಲ್ಯಮಾಪನಗಳು",
-    mySkills: "ನನ್ನ ಕೌಶಲ್ಯಗಳು",
-    academicPerformance: "ಶೈಕ್ಷಣಿಕ ಸಾಧನೆ",
-
-    account: "ಖಾತೆ",
-    myProfile: "ನನ್ನ ಪ್ರೊಫೈಲ್",
-    settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
-
-    searchPlaceholder:
-      "ಉದ್ಯೋಗ ಅವಕಾಶಗಳು, ಕಂಪನಿಗಳು, ಕೌಶಲ್ಯಗಳನ್ನು ಹುಡುಕಿ...",
-
-    studentDashboard: "ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
-
-    welcome: "ಮತ್ತೆ ಸ್ವಾಗತ, ಅನನ್ಯಾ 👋",
-
-    dashboardDescription:
-      "ನಿಮ್ಮ ಶೈಕ್ಷಣಿಕ ಪ್ರಗತಿ, ಕೌಶಲ್ಯಗಳು ಮತ್ತು ಉದ್ಯೋಗ ಅವಕಾಶಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.",
-
-    exploreOpportunities: "ಅವಕಾಶಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
-
-    currentCGPA: "ಪ್ರಸ್ತುತ CGPA",
-    outOf10: "10 ರಲ್ಲಿ",
-
-    attendance: "ಹಾಜರಾತಿ",
-    overallAttendance: "ಒಟ್ಟಾರೆ ಹಾಜರಾತಿ",
-
-    assessmentsTitle: "ಮೌಲ್ಯಮಾಪನಗಳು",
-    assessmentsCompleted: "ಪೂರ್ಣಗೊಂಡಿದೆ",
-
-    applications: "ಅರ್ಜಿಗಳು",
-    activeApplications: "ಸಕ್ರಿಯ ಅರ್ಜಿಗಳು",
-
-    completeProfile: "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್ ಪೂರ್ಣಗೊಳಿಸಿ",
-
-    profileDescription:
-      "ನಿಮ್ಮ ಶಿಕ್ಷಣ, ಕೌಶಲ್ಯಗಳು, ರೆಸ್ಯೂಮ್ ಮತ್ತು ಪ್ರಾಜೆಕ್ಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ.",
-
-    completeProfileButton: "ಪ್ರೊಫೈಲ್ ಪೂರ್ಣಗೊಳಿಸಿ",
-
-    academicPerformanceTitle: "ಶೈಕ್ಷಣಿಕ ಸಾಧನೆ",
-
-    performanceSubtitle:
-      "ಸೆಮಿಸ್ಟರ್‌ನಾದ್ಯಂತ ನಿಮ್ಮ ಸಾಧನೆಯ ಪ್ರಗತಿ",
-
-    attendanceTitle: "ಹಾಜರಾತಿ",
-    attendanceSubtitle: "ವಿಷಯವಾರು ಹಾಜರಾತಿ",
-
-    upcomingEvents: "ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು",
-    upcomingEventsSubtitle: "ನಿಮಗಾಗಿ ಪ್ರಮುಖ ದಿನಾಂಕಗಳು",
-
-    skillsProgress: "ಕೌಶಲ್ಯಗಳ ಪ್ರಗತಿ",
-    skillsSubtitle: "ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಕೌಶಲ್ಯ ಅಭಿವೃದ್ಧಿ",
-
-    careerReadiness: "ವೃತ್ತಿ ಸಿದ್ಧತೆ",
-    careerSubtitle: "ನಿಮ್ಮ ಉದ್ಯೋಗ ಸಿದ್ಧತೆ",
-
-    ready: "ಸಿದ್ಧ",
-
-    recommendedOpportunities: "ಶಿಫಾರಸು ಮಾಡಿದ ಅವಕಾಶಗಳು",
-
-    recommendedSubtitle:
-      "ನಿಮ್ಮ ಶಿಕ್ಷಣ ಮತ್ತು ಕೌಶಲ್ಯಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗುವ ಅವಕಾಶಗಳು",
-
-    viewAllOpportunities: "ಎಲ್ಲಾ ಅವಕಾಶಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
-
-    recentApplications: "ಇತ್ತೀಚಿನ ಅರ್ಜಿಗಳು",
-
-    recentApplicationsSubtitle:
-      "ಇತ್ತೀಚಿನ ಅರ್ಜಿ ಚಟುವಟಿಕೆ",
-
-    quickActions: "ತ್ವರಿತ ಕ್ರಮಗಳು",
-
-    quickActionsSubtitle:
-      "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್ ನಿರ್ವಹಿಸಿ",
-
-    updateProfile: "ಪ್ರೊಫೈಲ್ ನವೀಕರಿಸಿ",
-    uploadResume: "ರೆಸ್ಯೂಮ್ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
-    takeAssessment: "ಮೌಲ್ಯಮಾಪನ ತೆಗೆದುಕೊಳ್ಳಿ",
-    viewCertificates: "ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
-    findInternship: "ಇಂಟರ್ನ್‌ಶಿಪ್ ಹುಡುಕಿ",
-    viewPerformance: "ಸಾಧನೆಯನ್ನು ವೀಕ್ಷಿಸಿ",
-
-    profile: "ಪ್ರೊಫೈಲ್",
-    resume: "ರೆಸ್ಯೂಮ್",
-    skills: "ಕೌಶಲ್ಯಗಳು",
-
-    complete: "ಪೂರ್ಣಗೊಂಡಿದೆ",
-    uploaded: "ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ",
-    good: "ಉತ್ತಮ",
-
-    placement: "ಉದ್ಯೋಗ",
-    assessment: "ಮೌಲ್ಯಮಾಪನ",
-    workshop: "ಕಾರ್ಯಾಗಾರ",
-
-    deadline: "ಕೊನೆಯ ದಿನಾಂಕ",
-
-    shortlisted: "ಆಯ್ಕೆಪಟ್ಟಿಯಲ್ಲಿ",
-    underReview: "ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ",
-    applied: "ಅರ್ಜಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
-    rejected: "ತಿರಸ್ಕರಿಸಲಾಗಿದೆ",
-
-    readyStatus: "ಸಿದ್ಧ",
-
-    switchLanguage: "ಭಾಷೆ",
-  },
-};
-
-/* =========================================================
-   PERFORMANCE DATA
+   DASHBOARD DATA
+   Existing demo data retained. Replace with API data later
+   if these metrics become available from your backend.
 ========================================================= */
 
 const performanceData = [
@@ -292,2029 +60,1446 @@ const performanceData = [
   { month: "Jul", score: 89 },
 ];
 
-/* =========================================================
-   ATTENDANCE DATA
-========================================================= */
-
 const attendanceData = [
-  { subject: "CSE", attendance: 92 },
-  { subject: "DBMS", attendance: 88 },
+  { subject: "Computer Science", attendance: 92 },
+  { subject: "Database Systems", attendance: 88 },
   { subject: "Java", attendance: 95 },
   { subject: "React", attendance: 84 },
-  { subject: "AI/ML", attendance: 90 },
+  { subject: "AI / ML", attendance: 90 },
 ];
 
-/* =========================================================
-   MAIN COMPONENT
-========================================================= */
+const opportunities = [
+  {
+    title: "Frontend Developer Intern",
+    company: "Tech Solutions Pvt. Ltd.",
+    location: "Bengaluru",
+    type: "Internship",
+    skills: ["React", "JavaScript", "Tailwind"],
+    deadline: "30 Oct 2026",
+    color: "cyan",
+  },
+  {
+    title: "Java Developer Intern",
+    company: "Digital Systems",
+    location: "Bengaluru",
+    type: "Internship",
+    skills: ["Java", "Spring Boot", "SQL"],
+    deadline: "02 Nov 2026",
+    color: "violet",
+  },
+  {
+    title: "Software Engineer Trainee",
+    company: "NextGen Technologies",
+    location: "Hyderabad",
+    type: "Full time",
+    skills: ["Java", "SQL", "Git"],
+    deadline: "05 Nov 2026",
+    color: "amber",
+  },
+];
+
+const applicationData = [
+  {
+    title: "Frontend Developer Intern",
+    company: "Tech Solutions",
+    status: "Shortlisted",
+    type: "success",
+  },
+  {
+    title: "Java Developer Intern",
+    company: "Digital Systems",
+    status: "Under Review",
+    type: "pending",
+  },
+  {
+    title: "Software Engineer Trainee",
+    company: "NextGen Technologies",
+    status: "Applied",
+    type: "applied",
+  },
+];
+
+const events = [
+  {
+    title: "Campus Placement Drive",
+    date: "25 Oct",
+    time: "10:00 AM",
+    type: "Placement",
+  },
+  {
+    title: "React Assessment",
+    date: "28 Oct",
+    time: "02:00 PM",
+    type: "Assessment",
+  },
+  {
+    title: "Resume Workshop",
+    date: "30 Oct",
+    time: "11:30 AM",
+    type: "Workshop",
+  },
+];
+
+const translations = {
+  English: {
+    workspace: "STUDENT WORKSPACE",
+    overview: "Overview",
+    opportunities: "Find Opportunities",
+    applications: "My Applications",
+    saved: "Saved Opportunities",
+    assessments: "Assessments",
+    skills: "My Skills",
+    performance: "Academic Performance",
+    account: "ACCOUNT",
+    settings: "Settings",
+    dashboard: "Student Dashboard",
+    welcome: "Welcome back",
+    description:
+      "Your learning journey, academic progress and career opportunities — all in one place.",
+    explore: "Explore opportunities",
+    cgpa: "Current CGPA",
+    attendance: "Attendance",
+    completed: "Completed",
+    active: "Active applications",
+    outOf: "Out of 10",
+    profileTitle: "Your profile is taking shape",
+    profileDescription:
+      "Complete your education, skills, resume and projects to stand out to employers.",
+    completeProfile: "Complete profile",
+    academic: "Academic performance",
+    academicSub: "Your learning progress throughout the semester",
+    attendanceSub: "Subject-wise attendance",
+    events: "Upcoming events",
+    eventsSub: "Keep track of important dates",
+    skillProgress: "Skills development",
+    skillSub: "Your current learning progress",
+    readiness: "Career readiness",
+    readinessSub: "Your placement preparation",
+    ready: "Ready for opportunities",
+    recommended: "Recommended opportunities",
+    recommendedSub: "Explore roles that match your career interests",
+    viewAll: "View all opportunities",
+    recent: "Recent applications",
+    recentSub: "Track your latest application activity",
+    quick: "Quick actions",
+    quickSub: "Your most-used student tools",
+    updateProfile: "Update profile",
+    resume: "Build resume",
+    takeAssessment: "Take assessment",
+    certificates: "Certificates",
+    internship: "Find internship",
+    viewPerformance: "View performance",
+    profile: "My Profile",
+    logout: "Logout",
+    search: "Search opportunities, skills or companies...",
+    language: "Language",
+    loading: "Loading your student profile...",
+    noResults: "No matching opportunities found.",
+    deadline: "Deadline",
+    profileReady: "Profile",
+    resumeReady: "Resume",
+    skillsReady: "Skills",
+    applicationsTitle: "Applications",
+  },
+  Kannada: {
+    workspace: "ವಿದ್ಯಾರ್ಥಿ ಕಾರ್ಯಕ್ಷೇತ್ರ",
+    overview: "ಅವಲೋಕನ",
+    opportunities: "ಅವಕಾಶಗಳನ್ನು ಹುಡುಕಿ",
+    applications: "ನನ್ನ ಅರ್ಜಿಗಳು",
+    saved: "ಉಳಿಸಿದ ಅವಕಾಶಗಳು",
+    assessments: "ಮೌಲ್ಯಮಾಪನಗಳು",
+    skills: "ನನ್ನ ಕೌಶಲ್ಯಗಳು",
+    performance: "ಶೈಕ್ಷಣಿಕ ಸಾಧನೆ",
+    account: "ಖಾತೆ",
+    settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
+    dashboard: "ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    welcome: "ಮತ್ತೆ ಸ್ವಾಗತ",
+    description:
+      "ನಿಮ್ಮ ಕಲಿಕೆ, ಶೈಕ್ಷಣಿಕ ಪ್ರಗತಿ ಮತ್ತು ಉದ್ಯೋಗ ಅವಕಾಶಗಳನ್ನು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ವೀಕ್ಷಿಸಿ.",
+    explore: "ಅವಕಾಶಗಳನ್ನು ಅನ್ವೇಷಿಸಿ",
+    cgpa: "ಪ್ರಸ್ತುತ CGPA",
+    attendance: "ಹಾಜರಾತಿ",
+    completed: "ಪೂರ್ಣಗೊಂಡಿವೆ",
+    active: "ಸಕ್ರಿಯ ಅರ್ಜಿಗಳು",
+    outOf: "10 ರಲ್ಲಿ",
+    profileTitle: "ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ ಅನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ",
+    profileDescription:
+      "ನಿಮ್ಮ ಶಿಕ್ಷಣ, ಕೌಶಲ್ಯಗಳು, ರೆಸ್ಯೂಮ್ ಮತ್ತು ಪ್ರಾಜೆಕ್ಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ.",
+    completeProfile: "ಪ್ರೊಫೈಲ್ ಪೂರ್ಣಗೊಳಿಸಿ",
+    academic: "ಶೈಕ್ಷಣಿಕ ಸಾಧನೆ",
+    academicSub: "ಸೆಮಿಸ್ಟರ್‌ನಾದ್ಯಂತ ನಿಮ್ಮ ಕಲಿಕೆಯ ಪ್ರಗತಿ",
+    attendanceSub: "ವಿಷಯವಾರು ಹಾಜರಾತಿ",
+    events: "ಮುಂಬರುವ ಕಾರ್ಯಕ್ರಮಗಳು",
+    eventsSub: "ಪ್ರಮುಖ ದಿನಾಂಕಗಳನ್ನು ಗಮನದಲ್ಲಿಡಿ",
+    skillProgress: "ಕೌಶಲ್ಯ ಅಭಿವೃದ್ಧಿ",
+    skillSub: "ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಕಲಿಕೆಯ ಪ್ರಗತಿ",
+    readiness: "ವೃತ್ತಿ ಸಿದ್ಧತೆ",
+    readinessSub: "ನಿಮ್ಮ ಉದ್ಯೋಗ ತಯಾರಿ",
+    ready: "ಅವಕಾಶಗಳಿಗೆ ಸಿದ್ಧ",
+    recommended: "ಶಿಫಾರಸು ಮಾಡಿದ ಅವಕಾಶಗಳು",
+    recommendedSub: "ನಿಮ್ಮ ವೃತ್ತಿ ಆಸಕ್ತಿಗಳಿಗೆ ಹೊಂದುವ ಉದ್ಯೋಗಗಳು",
+    viewAll: "ಎಲ್ಲಾ ಅವಕಾಶಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+    recent: "ಇತ್ತೀಚಿನ ಅರ್ಜಿಗಳು",
+    recentSub: "ನಿಮ್ಮ ಅರ್ಜಿಗಳ ಪ್ರಗತಿಯನ್ನು ವೀಕ್ಷಿಸಿ",
+    quick: "ತ್ವರಿತ ಕ್ರಮಗಳು",
+    quickSub: "ಹೆಚ್ಚಾಗಿ ಬಳಸುವ ವಿದ್ಯಾರ್ಥಿ ಪರಿಕರಗಳು",
+    updateProfile: "ಪ್ರೊಫೈಲ್ ನವೀಕರಿಸಿ",
+    resume: "ರೆಸ್ಯೂಮ್ ರಚಿಸಿ",
+    takeAssessment: "ಮೌಲ್ಯಮಾಪನ",
+    certificates: "ಪ್ರಮಾಣಪತ್ರಗಳು",
+    internship: "ಇಂಟರ್ನ್‌ಶಿಪ್ ಹುಡುಕಿ",
+    viewPerformance: "ಸಾಧನೆಯನ್ನು ವೀಕ್ಷಿಸಿ",
+    profile: "ನನ್ನ ಪ್ರೊಫೈಲ್",
+    logout: "ಲಾಗ್ ಔಟ್",
+    search: "ಅವಕಾಶಗಳು, ಕೌಶಲ್ಯಗಳು ಅಥವಾ ಕಂಪನಿಗಳನ್ನು ಹುಡುಕಿ...",
+    language: "ಭಾಷೆ",
+    loading: "ನಿಮ್ಮ ವಿದ್ಯಾರ್ಥಿ ಪ್ರೊಫೈಲ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+    noResults: "ಹೊಂದಾಣಿಕೆಯ ಅವಕಾಶಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+    deadline: "ಕೊನೆಯ ದಿನಾಂಕ",
+    profileReady: "ಪ್ರೊಫೈಲ್",
+    resumeReady: "ರೆಸ್ಯೂಮ್",
+    skillsReady: "ಕೌಶಲ್ಯಗಳು",
+    applicationsTitle: "ಅರ್ಜಿಗಳು",
+  },
+};
+
+const NAVIGATION = [
+  { key: "overview", icon: LayoutDashboard, path: "/udyamsethu/student" },
+  {
+    key: "opportunities",
+    icon: Search,
+    path: "/udyamsethu/student/opportunities",
+  },
+  {
+    key: "applications",
+    icon: FileText,
+    path: "/udyamsethu/student/applications",
+  },
+  {
+    key: "saved",
+    icon: Bookmark,
+    path: "/udyamsethu/student/saved-opportunities",
+  },
+  {
+    key: "assessments",
+    icon: ClipboardCheck,
+    path: "/udyamsethu/student/assessments",
+  },
+  {
+    key: "skills",
+    icon: Target,
+    path: "/udyamsethu/student/skills",
+  },
+  {
+    key: "performance",
+    icon: GraduationCap,
+    path: "/udyamsethu/student/academic-performance",
+  },
+];
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
-
   const location = useLocation();
 
+  const [student, setStudent] = useState(null);
+  const [loadingStudent, setLoadingStudent] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
-
   const [language, setLanguage] = useState("English");
-  const [languageOpen, setLanguageOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const t = translations[language];
 
-  const [student, setStudent] = useState(null);
-  // const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [loadingStudent, setLoadingStudent] = useState(true);
+  /* =========================================================
+     EXISTING BACKEND INTEGRATION — PRESERVED
+  ========================================================= */
 
   useEffect(() => {
-    const fetchLoggedInStudent = async () => {
+    let cancelled = false;
+
+    const fetchStudent = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/udyamsethu/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-          navigate("/udyamsethu/login");
-          return;
-        }
-
         const response = await fetch(
-          "http://localhost:5000/api/auth/me",
+          "http://localhost:5000/api/student/profile",
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
             },
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Unable to fetch student");
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/udyamsethu/login");
+          return;
         }
 
         const data = await response.json();
 
-        setStudent(data.user || data);
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Unable to fetch student profile"
+          );
+        }
+
+        if (!cancelled) {
+          setStudent(data.user || data.profile || data);
+        }
       } catch (error) {
         console.error("Student fetch error:", error);
       } finally {
-        setLoadingStudent(false);
+        if (!cancelled) {
+          setLoadingStudent(false);
+        }
       }
     };
 
-    fetchLoggedInStudent();
+    fetchStudent();
+
+    return () => {
+      cancelled = true;
+    };
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-
     setStudent(null);
     navigate("/udyamsethu/login");
   };
 
-  const getInitials = (name = "") => {
-    return name
-      .split(" ")
+  const getInitials = (name = "") =>
+    name
+      .trim()
+      .split(/\s+/)
       .filter(Boolean)
       .slice(0, 2)
       .map((word) => word[0])
       .join("")
-      .toUpperCase();
-  };
+      .toUpperCase() || "ST";
 
   const studentName = student?.fullName || "Student";
   const studentInitials = getInitials(studentName);
-  const studentCourse = student?.course || student?.organization || "Student";
-  const studentYear = student?.year || "";
+  const studentCourse =
+    student?.course || student?.organization || "Student";
+  const studentEmail = student?.email || "";
 
-  const [sidebarProfileOpen, setSidebarProfileOpen] = useState(false);
-  const [headerProfileOpen, setHeaderProfileOpen] = useState(false);
+  const filteredOpportunities = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
 
-  /* =========================================================
-     NAVIGATION
-  ========================================================= */
+    if (!query) return opportunities;
 
-  const navigation = [
-    {
-      label: t.overview,
-      icon: LayoutDashboard,
-      path: "/udyamsethu/student"
-    },
-    {
-      label: t.findOpportunities,
-      icon: Search,
-      path: "/udyamsethu/student/opportunities",
-    },
-    {
-      label: t.myApplications,
-      icon: FileText,
-      path: "/udyamsethu/student/applications",
-    },
-    {
-      label: t.savedOpportunities,
-      icon: Bookmark,
-      path: "/udyamsethu/student/saved-opportunities",
-    },
-    {
-      label: t.assessments,
-      icon: ClipboardCheck,
-      path: "/udyamsethu/student/assessments"
-    },
-    {
-      label: t.mySkills,
-      icon: Target,
-      path: "/udyamsethu/student/skills",
-    },
-    {
-      label: t.academicPerformance,
-      icon: GraduationCap,
-      path: "/udyamsethu/student/academic-performance",
-    },
-  ];
-
-  /* =========================================================
-     UPCOMING EVENTS
-  ========================================================= */
-
-  const upcomingEvents =
-    language === "English"
-      ? [
-        {
-          title: "Campus Placement Drive",
-          date: "25 Aug",
-          time: "10:00 AM",
-          type: t.placement,
-        },
-        {
-          title: "React Assessment",
-          date: "28 Aug",
-          time: "2:00 PM",
-          type: t.assessment,
-        },
-        {
-          title: "Resume Workshop",
-          date: "30 Aug",
-          time: "11:30 AM",
-          type: t.workshop,
-        },
+    return opportunities.filter((item) =>
+      [
+        item.title,
+        item.company,
+        item.location,
+        item.type,
+        ...item.skills,
       ]
-      : [
-        {
-          title: "ಕ್ಯಾಂಪಸ್ ಉದ್ಯೋಗ ಮೇಳ",
-          date: "25 ಆಗಸ್ಟ್",
-          time: "10:00 AM",
-          type: t.placement,
-        },
-        {
-          title: "React ಮೌಲ್ಯಮಾಪನ",
-          date: "28 ಆಗಸ್ಟ್",
-          time: "2:00 PM",
-          type: t.assessment,
-        },
-        {
-          title: "ರೆಸ್ಯೂಮ್ ಕಾರ್ಯಾಗಾರ",
-          date: "30 ಆಗಸ್ಟ್",
-          time: "11:30 AM",
-          type: t.workshop,
-        },
-      ];
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [searchQuery]);
 
-  /* =========================================================
-     RECOMMENDED OPPORTUNITIES
-  ========================================================= */
-
-  const recommendedOpportunities =
-    language === "English"
-      ? [
-        {
-          title: "Frontend Developer Intern",
-          company: "Tech Solutions Pvt. Ltd.",
-          location: "Bangalore",
-          type: "Internship",
-          skills: ["React", "JavaScript", "Tailwind"],
-          deadline: "30 Aug 2026",
-        },
-        {
-          title: "Java Developer Intern",
-          company: "Digital Systems",
-          location: "Bangalore",
-          type: "Internship",
-          skills: ["Java", "Spring Boot", "MySQL"],
-          deadline: "02 Sep 2026",
-        },
-        {
-          title: "Software Engineer Trainee",
-          company: "NextGen Technologies",
-          location: "Hyderabad",
-          type: "Full Time",
-          skills: ["Java", "SQL", "Git"],
-          deadline: "05 Sep 2026",
-        },
-      ]
-      : [
-        {
-          title: "ಫ್ರಂಟ್‌ಎಂಡ್ ಡೆವಲಪರ್ ಇಂಟರ್ನ್",
-          company: "ಟೆಕ್ ಸೊಲ್ಯೂಷನ್ಸ್ ಪ್ರೈವೇಟ್ ಲಿಮಿಟೆಡ್",
-          location: "ಬೆಂಗಳೂರು",
-          type: "ಇಂಟರ್ನ್‌ಶಿಪ್",
-          skills: ["React", "JavaScript", "Tailwind"],
-          deadline: "30 ಆಗಸ್ಟ್ 2026",
-        },
-        {
-          title: "ಜಾವಾ ಡೆವಲಪರ್ ಇಂಟರ್ನ್",
-          company: "ಡಿಜಿಟಲ್ ಸಿಸ್ಟಮ್ಸ್",
-          location: "ಬೆಂಗಳೂರು",
-          type: "ಇಂಟರ್ನ್‌ಶಿಪ್",
-          skills: ["Java", "Spring Boot", "MySQL"],
-          deadline: "02 ಸೆಪ್ಟೆಂಬರ್ 2026",
-        },
-        {
-          title: "ಸಾಫ್ಟ್‌ವೇರ್ ಎಂಜಿನಿಯರ್ ತರಬೇತಿದಾರ",
-          company: "ನೆಕ್ಸ್ಟ್‌ಜೆನ್ ಟೆಕ್ನಾಲಜೀಸ್",
-          location: "ಹೈದರಾಬಾದ್",
-          type: "ಪೂರ್ಣಕಾಲಿಕ",
-          skills: ["Java", "SQL", "Git"],
-          deadline: "05 ಸೆಪ್ಟೆಂಬರ್ 2026",
-        },
-      ];
-
-  /* =========================================================
-     APPLICATIONS
-  ========================================================= */
-
-  const applications =
-    language === "English"
-      ? [
-        {
-          title: "Frontend Developer Intern",
-          company: "Tech Solutions",
-          status: t.shortlisted,
-          type: "success",
-        },
-        {
-          title: "Java Developer Intern",
-          company: "Digital Systems",
-          status: t.underReview,
-          type: "pending",
-        },
-        {
-          title: "Software Engineer Trainee",
-          company: "NextGen Technologies",
-          status: t.applied,
-          type: "applied",
-        },
-        {
-          title: "UI Developer Intern",
-          company: "Creative Labs",
-          status: t.rejected,
-          type: "rejected",
-        },
-      ]
-      : [
-        {
-          title: "ಫ್ರಂಟ್‌ಎಂಡ್ ಡೆವಲಪರ್ ಇಂಟರ್ನ್",
-          company: "ಟೆಕ್ ಸೊಲ್ಯೂಷನ್ಸ್",
-          status: t.shortlisted,
-          type: "success",
-        },
-        {
-          title: "ಜಾವಾ ಡೆವಲಪರ್ ಇಂಟರ್ನ್",
-          company: "ಡಿಜಿಟಲ್ ಸಿಸ್ಟಮ್ಸ್",
-          status: t.underReview,
-          type: "pending",
-        },
-        {
-          title: "ಸಾಫ್ಟ್‌ವೇರ್ ಎಂಜಿನಿಯರ್ ತರಬೇತಿದಾರ",
-          company: "ನೆಕ್ಸ್ಟ್‌ಜೆನ್ ಟೆಕ್ನಾಲಜೀಸ್",
-          status: t.applied,
-          type: "applied",
-        },
-        {
-          title: "UI ಡೆವಲಪರ್ ಇಂಟರ್ನ್",
-          company: "ಕ್ರಿಯೇಟಿವ್ ಲ್ಯಾಬ್ಸ್",
-          status: t.rejected,
-          type: "rejected",
-        },
-      ];
-
-  /* =========================================================
-     COLORS
-  ========================================================= */
-
-  const bg = darkMode
-    ? "bg-[#0f172a]"
-    : "bg-[#f4f7fb]";
-
-  const card = darkMode
-    ? "bg-[#172033] border-slate-700"
+  const surface = darkMode
+    ? "bg-[#141e32] border-white/[0.07]"
     : "bg-white border-slate-200";
 
-  const textPrimary = darkMode
-    ? "text-white"
-    : "text-slate-900";
+  const primaryText = darkMode ? "text-white" : "text-slate-900";
+  const mutedText = darkMode ? "text-slate-400" : "text-slate-500";
+  const pageBackground = darkMode ? "bg-[#0b1120]" : "bg-[#f5f7fb]";
 
-  const textSecondary = darkMode
-    ? "text-slate-400"
-    : "text-slate-500";
+  const goTo = (path) => {
+    setSidebarOpen(false);
+    setProfileMenuOpen(false);
+    navigate(path);
+  };
+
+  if (loadingStudent) {
+    return (
+      <div
+        className={`min-h-screen ${pageBackground} ${primaryText} flex flex-col items-center justify-center gap-4`}
+      >
+        <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 flex items-center justify-center">
+          <GraduationCap className="text-cyan-500 animate-pulse" size={27} />
+        </div>
+        <p className="text-sm">{t.loading}</p>
+      </div>
+    );
+  }
 
   return (
     <div
-      className={`
-        min-h-screen
-        ${bg}
-        ${textPrimary}
-        transition-colors
-        duration-300
-      `}
+      className={`min-h-screen ${pageBackground} ${primaryText} transition-colors duration-300`}
     >
-      {/* =================================================
-          MOBILE OVERLAY
-      ================================================= */}
-
+      {/* MOBILE OVERLAY */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        <button
+          aria-label="Close navigation"
           onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden"
         />
       )}
 
-      {/* =================================================
-          SIDEBAR
-      ================================================= */}
-
+      {/* SIDEBAR */}
       <aside
-        className={`
-          fixed
-          left-0
-          top-0
-          z-50
-          w-[260px]
-          h-screen
-          bg-[#172033]
-          text-white
-          transition-transform
-          duration-300
-          lg:translate-x-0
-          ${sidebarOpen
-            ? "translate-x-0"
-            : "-translate-x-full"}
-        `}
+        className={`fixed inset-y-0 left-0 z-50 flex w-[265px] flex-col border-r transition-transform duration-300 ${
+          darkMode
+            ? "bg-[#10192b] border-white/[0.08]"
+            : "bg-white border-slate-200"
+        } ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
-        {/* LOGO */}
-
-        <div className="h-[72px] px-5 flex items-center justify-between border-b border-white/10">
-          <div className="flex items-center gap-3">
-
-            <a
-              href="/udyamsethu/student"
-              className="flex items-center justify-center"
-            >
-              <div className="relative flex h-16 w-52 items-center justify-center rounded-2xl overflow-hidden bg-white border border-white/20 shadow-lg">
-
-                <img
-                  src={logo}
-                  alt="Udyam Sethu Logo"
-                  className="w-full h-full object-contain p-2 bg-lightblue-500"
-                />
-
-                {/* <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full bg-cyan-400 ring-2 ring-white" /> */}
-
-              </div>
-            </a>
-
-          </div>
+        {/* BRAND */}
+        <div className="h-[76px] flex items-center justify-between px-5 border-b border-slate-500/15">
+          <button
+            onClick={() => goTo("/udyamsethu/student")}
+            className="h-12 w-[190px] rounded-xl bg-white px-3 flex items-center justify-center"
+            aria-label="Udyam Sethu home"
+          >
+            <img
+              src={logo}
+              alt="Udyam Sethu"
+              className="max-h-full max-w-full object-contain"
+            />
+          </button>
 
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-slate-400"
+            className="lg:hidden p-2 rounded-lg hover:bg-slate-500/10"
+            aria-label="Close sidebar"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* NAVIGATION */}
-
-        <div className="px-3 py-6">
-
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 px-3 mb-3">
-            {t.studentWorkspace}
+        <div className="flex-1 overflow-y-auto px-3 py-6">
+          <p className="px-3 mb-3 text-[10px] font-bold tracking-[0.18em] text-slate-500">
+            {t.workspace}
           </p>
 
           <nav className="space-y-1">
-
-            {navigation.map((item, index) => {
+            {NAVIGATION.map((item) => {
               const Icon = item.icon;
+              const isActive =
+                item.path === "/udyamsethu/student"
+                  ? location.pathname === item.path ||
+                    location.pathname === "/udyamsethu/student/"
+                  : location.pathname === item.path ||
+                    location.pathname.startsWith(`${item.path}/`);
 
               return (
                 <button
-                  key={item.label}
-                  onClick={() => navigate(item.path)}
-                  className={`
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-3
-                    py-2.5
-                    rounded-lg
-                    text-sm
-                    transition
-
-                    ${location.pathname === item.path
-                      ? "bg-cyan-400 text-[#172033] font-semibold"
-                      : "text-slate-300 hover:bg-white/5 hover:text-white"
-                    }
-                  `}
+                  key={item.key}
+                  onClick={() => goTo(item.path)}
+                  className={`group relative w-full flex items-center gap-3 rounded-xl px-3 py-3 text-left text-[13px] transition-all ${
+                    isActive
+                      ? "bg-cyan-400 text-slate-950 font-semibold shadow-lg shadow-cyan-950/10"
+                      : darkMode
+                      ? "text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                  }`}
                 >
-                  <Icon size={18} />
-
-                  {item.label}
+                  <Icon size={18} strokeWidth={isActive ? 2.3 : 1.8} />
+                  <span className="flex-1">{t[item.key]}</span>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-950" />
+                  )}
                 </button>
               );
             })}
-
           </nav>
 
-          <p className="text-[10px] uppercase tracking-widest text-slate-500 px-3 mt-8 mb-3">
+          <p className="px-3 mt-8 mb-3 text-[10px] font-bold tracking-[0.18em] text-slate-500">
             {t.account}
           </p>
 
-          {/* <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-white/5">
-            <UserRound size={18} />
-            {t.myProfile}
-          </button> */}
-
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:bg-white/5"
-            onClick={() => navigate("/udyamsethu/student/settings")}>
+          <button
+            onClick={() => goTo("/udyamsethu/student/settings")}
+            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[13px] transition ${
+              darkMode
+                ? "text-slate-400 hover:bg-white/[0.05] hover:text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
             <Settings size={18} />
             {t.settings}
           </button>
 
-        </div>
-
-        {/* PROFILE */}
-
-        {/* PROFILE MENU */}
-
-        {/* PROFILE */}
-
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="relative">
-
-            <button
-              onClick={() => {
-                setSidebarProfileOpen(!sidebarProfileOpen);
-                setHeaderProfileOpen(false);
-              }}
-              className="
-        w-full
-        p-3
-        rounded-xl
-        bg-white/5
-        border
-        border-white/10
-        hover:bg-white/10
-        transition
-        text-left
-      "
-            >
-              <div className="flex items-center gap-3">
-
-                {/* PROFILE IMAGE */}
-                <div className="w-9 h-9 rounded-full bg-cyan-400 flex items-center justify-center shrink-0">
-                  <span className="text-xs font-bold text-[#172033]">
-                    {studentInitials}
-                  </span>
-                </div>
-
-                {/* USER DETAILS */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
-                    {studentName}
-                  </p>
-
-                  <p className="text-xs text-slate-400 truncate">
-                    {studentCourse}
-                    {studentYear && ` • ${studentYear}`}
-                  </p>
-                </div>
-
-                <ChevronDown
-                  size={15}
-                  className={`transition-transform ${sidebarProfileOpen ? "rotate-180" : ""
-                    }`}
-                />
-
-              </div>
-            </button>
-
-            {/* SIDEBAR DROPDOWN */}
-            {sidebarProfileOpen && (
-              <div
-                className="
-          absolute
-          bottom-full
-          left-0
-          right-0
-          mb-2
-          rounded-xl
-          bg-[#1e293b]
-          border
-          border-slate-700
-          shadow-2xl
-          overflow-hidden
-          z-50
-        "
-              >
-
-                <button
-                  onClick={() => {
-                    setSidebarProfileOpen(false);
-                    navigate("/udyamsethu/student/profile");
-                  }}
-                  className="
-            w-full
-            flex
-            items-center
-            gap-3
-            px-4
-            py-3
-            text-sm
-            text-slate-200
-            hover:bg-white/10
-            transition
-          "
-                >
-                  <UserRound size={17} />
-                  My Profile
-                </button>
-
-                <button
-                  onClick={() => {
-                    setSidebarProfileOpen(false);
-                    navigate("/udyamsethu/student/settings");
-                  }}
-                  className="
-            w-full
-            flex
-            items-center
-            gap-3
-            px-4
-            py-3
-            text-sm
-            text-slate-200
-            hover:bg-white/10
-            transition
-          "
-                >
-                  <Settings size={17} />
-                  Settings
-                </button>
-
-                <div className="border-t border-slate-700" />
-
-                <button
-                  onClick={handleLogout}
-                  className="
-            w-full
-            flex
-            items-center
-            gap-3
-            px-4
-            py-3
-            text-sm
-            text-red-400
-            hover:bg-red-500/10
-            transition
-          "
-                >
-                  <LogOut size={17} />
-                  Logout
-                </button>
-
-              </div>
-            )}
-
-          </div>
-        </div>
-
-      </aside>
-
-      {/* =================================================
-          MAIN
-      ================================================= */}
-
-      <div className="lg:ml-[260px]">
-
-        {/* =================================================
-            HEADER
-        ================================================= */}
-
-        <header
-          className={`
-            h-[72px]
-
-            ${darkMode
-              ? "bg-[#111827] border-slate-700"
-              : "bg-white border-slate-200"
-            }
-
-            border-b
-            flex
-            items-center
-            px-4
-            lg:px-7
-            gap-4
-          `}
-        >
-
-          {/* MOBILE MENU */}
-
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden"
-          >
-            <Menu size={22} />
-          </button>
-
-          {/* SEARCH */}
-
-          <div className="relative flex-1 max-w-xl">
-
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-
-            <input
-              placeholder={t.searchPlaceholder}
-              className={`
-                w-full
-                h-10
-                pl-10
-                pr-4
-                rounded-lg
-                border
-                outline-none
-                text-sm
-
-                ${darkMode
-                  ? "bg-[#172033] border-slate-700 text-white placeholder:text-slate-500"
-                  : "bg-slate-50 border-slate-200 text-slate-900"
-                }
-
-                focus:border-cyan-400
-              `}
-            />
-
-          </div>
-
-          {/* =================================================
-              LANGUAGE
-          ================================================= */}
-
-
-
-          {/* DARK MODE */}
-
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className={`
-              w-10
-              h-10
-              rounded-lg
-              flex
-              items-center
-              justify-center
-              transition
-
-              ${darkMode
-                ? "bg-slate-800 text-yellow-300"
-                : "hover:bg-slate-100 text-slate-600"
-              }
-            `}
-            title={
-              darkMode
-                ? "Switch to light mode"
-                : "Switch to dark mode"
-            }
-          >
-            {darkMode ? (
-              <Sun size={19} />
-            ) : (
-              <Moon size={19} />
-            )}
-          </button>
-
-          {/* NOTIFICATION */}
-
-          <button
-            className={`
-              relative
-              w-10
-              h-10
-              rounded-lg
-              flex
-              items-center
-              justify-center
-
-              ${darkMode
-                ? "hover:bg-slate-800"
-                : "hover:bg-slate-100"
-              }
-            `}
-          >
-
-            <Bell size={19} />
-
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-cyan-500 border-2 border-white" />
-
-          </button>
-
-          {/* PROFILE */}
-
-          {/* TOP RIGHT PROFILE */}
-          <div className="relative hidden sm:block">
-
-            <button
-              onClick={() => {
-                setHeaderProfileOpen(!headerProfileOpen);
-                setSidebarProfileOpen(false);
-              }}
-              className={`
-      flex
-      items-center
-      gap-3
-      border-l
-      pl-4
-      pr-1
-      py-1
-      transition
-      ${darkMode
-                  ? "border-slate-700 hover:bg-white/5"
-                  : "border-slate-200 hover:bg-slate-50"
-                }
-    `}
-            >
-
-              {/* AVATAR */}
-              <div className="w-9 h-9 rounded-full bg-cyan-400 flex items-center justify-center">
-                <span className="text-[#172033] text-xs font-bold">
-                  {studentInitials}
-                </span>
-              </div>
-
-              {/* NAME */}
-              <div className="text-left">
-
-                <p className="text-sm font-medium truncate max-w-[120px]">
-                  {studentName}
-                </p>
-
-                <p className={`text-xs ${textSecondary} truncate max-w-[120px]`}>
-                  {studentCourse}
-                </p>
-
-              </div>
-
-              <ChevronDown
-                size={15}
-                className={`
-                   text-slate-400
-                     transition-transform
-                     ${headerProfileOpen ? "rotate-180" : ""}
-                  `}
-              />
-
-            </button>
-
-
-            {/* TOP RIGHT DROPDOWN */}
-
-            {headerProfileOpen && (
-              <div
-                className={`
-        absolute
-        right-0
-        top-14
-        z-50
-        w-56
-        rounded-xl
-        border
-        shadow-2xl
-        overflow-hidden
-        ${darkMode
-                    ? "bg-[#172033] border-slate-700"
-                    : "bg-white border-slate-200"
-                  }
-      `}
-              >
-
-                {/* USER INFO */}
-
-                <div className="px-4 py-4 border-b border-slate-700">
-
-                  <div className="flex items-center gap-3">
-
-                    <div className="w-10 h-10 rounded-full bg-cyan-400 flex items-center justify-center">
-                      <span className="text-[#172033] text-xs font-bold">
-                        {studentInitials}
-                      </span>
-                    </div>
-
-                    <div className="min-w-0">
-
-                      <p className="text-sm font-semibold truncate">
-                        {studentName}
-                      </p>
-
-                      <p className="text-xs text-slate-400 truncate">
-                        {student?.email || ""}
-                      </p>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-
-                {/* PROFILE */}
-
-                <button
-                  onClick={() => {
-                    setHeaderProfileOpen(false);
-                    navigate("/udyamsethu/student/profile");
-                  }}
-                  className={`
-          w-full
-          flex
-          items-center
-          gap-3
-          px-4
-          py-3
-          text-sm
-          transition
-          ${darkMode
-                      ? "text-slate-200 hover:bg-slate-800"
-                      : "text-slate-700 hover:bg-slate-50"
-                    }
-        `}
-                >
-                  <UserRound size={17} />
-                  My Profile
-                </button>
-
-
-                {/* SETTINGS */}
-
-                <button
-                  onClick={() => {
-                    setHeaderProfileOpen(false);
-                    navigate("/udyamsethu/student/settings");
-                  }}
-                  className={`
-          w-full
-          flex
-          items-center
-          gap-3
-          px-4
-          py-3
-          text-sm
-          transition
-          ${darkMode
-                      ? "text-slate-200 hover:bg-slate-800"
-                      : "text-slate-700 hover:bg-slate-50"
-                    }
-        `}
-                >
-                  <Settings size={17} />
-                  Settings
-                </button>
-
-
-                {/* LOGOUT */}
-
-                <div className="border-t border-slate-700" />
-
-                <button
-                  onClick={handleLogout}
-                  className="
-          w-full
-          flex
-          items-center
-          gap-3
-          px-4
-          py-3
-          text-sm
-          text-red-500
-          hover:bg-red-500/10
-          transition
-        "
-                >
-                  <LogOut size={17} />
-                  Logout
-                </button>
-
-              </div>
-            )}
-
-          </div>
-
-
-        </header>
-
-        {/* =================================================
-            CONTENT
-        ================================================= */}
-
-        <main className="p-4 lg:p-7">
-
-          {/* PAGE HEADER */}
-
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 mb-6">
-
-            <div>
-
-              <p className="text-xs font-semibold tracking-wider text-cyan-600 uppercase">
-                {t.studentDashboard}
-              </p>
-
-              <h2 className="text-2xl lg:text-3xl font-bold mt-1">
-                {t.welcome},{studentName}
-              </h2>
-
-              <p
-                className={`text-sm ${textSecondary} mt-2`}
-              >
-                {t.dashboardDescription}
-              </p>
-
-            </div>
-
-            <button className="px-5 h-11 bg-[#172033] text-white rounded-lg flex items-center gap-2 text-sm font-semibold hover:bg-[#253451] transition">
-
-              <Search size={17} />
-
-              {t.exploreOpportunities}
-
-            </button>
-
-          </div>
-
-          {/* =================================================
-              STUDENT SUMMARY CARDS
-          ================================================= */}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
-
-            <StudentStatCard
-              title={t.currentCGPA}
-              value="8.6"
-              subtitle={t.outOf10}
-              icon={GraduationCap}
-              darkMode={darkMode}
-              onClick={() =>
-                navigate("/udyamsethu/student/academic-performance")
-              }
-            />
-
-            <StudentStatCard
-              title={t.attendance}
-              value="91%"
-              subtitle={t.overallAttendance}
-              icon={CheckCircle2}
-              darkMode={darkMode}
-              onClick={() =>
-                navigate("/udyamsethu/student/attendance")
-              }
-            />
-
-            <StudentStatCard
-              title={t.assessmentsTitle}
-              value="18"
-              subtitle={t.assessmentsCompleted}
-              icon={ClipboardCheck}
-              darkMode={darkMode}
-              onClick={() => {
-                navigate("/udyamsethu/student/assessments")
-              }}
-            />
-
-            <StudentStatCard
-              title={t.applications}
-              value="12"
-              subtitle={t.activeApplications}
-              icon={BriefcaseBusiness}
-              darkMode={darkMode}
-              onClick={() =>
-                navigate("/udyamsethu/student/applications")
-              }
-            />
-
-          </div>
-
-          {/* =================================================
-              PROFILE COMPLETION
-          ================================================= */}
-
+          {/* SIDEBAR HELP CARD */}
           <div
-            className={`
-              ${card}
-              border
-              rounded-xl
-              p-5
-              mb-5
-            `}
+            className={`mt-8 rounded-2xl border p-4 ${
+              darkMode
+                ? "bg-gradient-to-br from-cyan-400/[0.10] to-violet-500/[0.08] border-cyan-300/10"
+                : "bg-gradient-to-br from-cyan-50 to-violet-50 border-cyan-100"
+            }`}
           >
+            <div className="w-9 h-9 rounded-xl bg-cyan-400/15 text-cyan-500 flex items-center justify-center mb-3">
+              <Sparkles size={19} />
+            </div>
+            <p className="text-sm font-semibold">Build your future</p>
+            <p className={`text-xs mt-1.5 leading-5 ${mutedText}`}>
+              Keep your profile and skills updated for better opportunities.
+            </p>
+            <button
+              onClick={() => goTo("/udyamsethu/student/profile")}
+              className="mt-3 text-xs font-semibold text-cyan-500 flex items-center gap-1 hover:gap-2 transition-all"
+            >
+              Improve profile <ArrowUpRight size={14} />
+            </button>
+          </div>
+        </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-5">
-
-              <div className="w-12 h-12 rounded-xl bg-cyan-50 flex items-center justify-center">
-                <UserRound
-                  size={23}
-                  className="text-cyan-600"
-                />
+        {/* SIDEBAR PROFILE */}
+        <div className="relative p-3 border-t border-slate-500/15">
+          {profileMenuOpen && (
+            <div
+              className={`absolute bottom-[calc(100%+8px)] left-3 right-3 overflow-hidden rounded-xl border shadow-2xl ${
+                darkMode
+                  ? "bg-[#19243a] border-slate-700"
+                  : "bg-white border-slate-200"
+              }`}
+            >
+              <div className="px-4 py-3 border-b border-slate-500/15">
+                <p className="text-sm font-semibold truncate">{studentName}</p>
+                <p className={`text-xs mt-1 truncate ${mutedText}`}>
+                  {studentEmail || studentCourse}
+                </p>
               </div>
 
-              <div className="flex-1">
-
-                <div className="flex justify-between mb-2">
-
-                  <div>
-
-                    <p className="text-sm font-semibold">
-                      {t.completeProfile}
-                    </p>
-
-                    <p
-                      className={`text-xs ${textSecondary} mt-1`}
-                    >
-                      {t.profileDescription}
-                    </p>
-
-                  </div>
-
-                  <span className="text-sm font-bold text-cyan-600">
-                    80%
-                  </span>
-
-                </div>
-
-                <div
-                  className={`
-                    h-2
-                    rounded-full
-                    ${darkMode
-                      ? "bg-slate-700"
-                      : "bg-slate-100"
-                    }
-                  `}
-                >
-                  <div className="h-full w-[80%] bg-cyan-500 rounded-full" />
-                </div>
-
-              </div>
-
-              <button className="text-sm font-semibold text-cyan-600">
-                {t.completeProfileButton} →
+              <button
+                onClick={() => goTo("/udyamsethu/student/profile")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-slate-500/10"
+              >
+                <UserRound size={16} /> {t.profile}
               </button>
 
+              <button
+                onClick={() => goTo("/udyamsethu/student/settings")}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-slate-500/10"
+              >
+                <Settings size={16} /> {t.settings}
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 border-t border-slate-500/15"
+              >
+                <LogOut size={16} /> {t.logout}
+              </button>
+            </div>
+          )}
+
+          <button
+            onClick={() => setProfileMenuOpen((open) => !open)}
+            className={`w-full flex items-center gap-3 rounded-xl p-3 text-left transition ${
+              darkMode ? "hover:bg-white/[0.05]" : "hover:bg-slate-100"
+            }`}
+          >
+            <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-cyan-300 to-cyan-500 flex items-center justify-center text-slate-950 text-xs font-bold">
+              {studentInitials}
             </div>
 
-          </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold truncate">{studentName}</p>
+              <p className={`text-xs mt-1 truncate ${mutedText}`}>
+                {studentCourse}
+              </p>
+            </div>
 
-          {/* =================================================
-              ROW 1
-          ================================================= */}
+            <ChevronDown
+              size={16}
+              className={`shrink-0 transition-transform ${
+                profileMenuOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+        </div>
+      </aside>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-
-            {/* PERFORMANCE */}
-
-            <div
-              className={`
-                ${card}
-                xl:col-span-2
-                border
-                rounded-xl
-              `}
+      {/* MAIN CONTENT */}
+      <div className="min-h-screen lg:ml-[265px]">
+        {/* TOP BAR */}
+        <header
+          className={`sticky top-0 z-30 h-[72px] border-b backdrop-blur-xl ${
+            darkMode
+              ? "bg-[#0b1120]/90 border-white/[0.07]"
+              : "bg-white/90 border-slate-200"
+          }`}
+        >
+          <div className="h-full flex items-center gap-3 px-4 sm:px-6 xl:px-8">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-slate-500/10"
+              aria-label="Open navigation"
             >
+              <Menu size={21} />
+            </button>
 
-              <ChartHeader
-                title={t.academicPerformanceTitle}
-                subtitle={t.performanceSubtitle}
+            <div className="relative flex-1 max-w-[520px]">
+              <Search
+                size={17}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
               />
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={t.search}
+                aria-label="Search opportunities"
+                className={`w-full h-10 rounded-xl border pl-10 pr-4 text-sm outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/10 ${
+                  darkMode
+                    ? "bg-white/[0.035] border-white/[0.08] text-white placeholder:text-slate-500"
+                    : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+                }`}
+              />
+            </div>
 
-              <div className="p-5">
+            <div className="ml-auto flex items-center gap-2 sm:gap-3">
+              <label className="sr-only" htmlFor="dashboard-language">
+                {t.language}
+              </label>
+              <select
+                id="dashboard-language"
+                value={language}
+                onChange={(event) => setLanguage(event.target.value)}
+                className={`h-9 max-w-[100px] rounded-lg border px-2 text-xs outline-none ${
+                  darkMode
+                    ? "bg-[#141e32] border-white/10 text-slate-200"
+                    : "bg-white border-slate-200 text-slate-700"
+                }`}
+              >
+                <option value="English">English</option>
+                <option value="Kannada">ಕನ್ನಡ</option>
+              </select>
 
-                <div className="flex items-end gap-3 mb-4">
+              <button
+                onClick={() => setDarkMode((value) => !value)}
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                title={darkMode ? "Light mode" : "Dark mode"}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center transition ${
+                  darkMode
+                    ? "bg-white/[0.06] text-amber-300 hover:bg-white/10"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+              </button>
 
-                  <p className="text-3xl font-bold">
-                    8.6 CGPA
-                  </p>
+              <button
+                onClick={() => goTo("/udyamsethu/student/notifications")}
+                aria-label="Notifications"
+                className={`relative w-9 h-9 rounded-xl flex items-center justify-center ${
+                  darkMode
+                    ? "text-slate-300 hover:bg-white/[0.06]"
+                    : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                <Bell size={18} />
+                <span className="absolute right-2 top-2 w-2 h-2 rounded-full bg-cyan-400 ring-2 ring-[#0b1120]" />
+              </button>
 
-                  <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600 mb-1">
-                    <TrendingUp size={13} />
-                    +12.4%
-                  </span>
+              <button
+                onClick={() => setProfileMenuOpen((open) => !open)}
+                className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-500/20"
+                aria-label="Open profile menu"
+              >
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-300 to-cyan-500 flex items-center justify-center text-slate-950 text-xs font-bold">
+                  {studentInitials}
+                </div>
+                <ChevronDown size={15} className={mutedText} />
+              </button>
+            </div>
+          </div>
+        </header>
 
+        <main className="max-w-[1600px] mx-auto p-4 sm:p-6 xl:p-8">
+          {/* WELCOME BANNER */}
+          <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#13283c] via-[#153447] to-[#173b4b] p-5 sm:p-7 xl:p-8 mb-6">
+            <div className="absolute -right-12 -top-24 w-72 h-72 rounded-full border-[38px] border-cyan-300/[0.06]" />
+            <div className="absolute right-24 -bottom-32 w-64 h-64 rounded-full bg-cyan-400/[0.07] blur-2xl" />
+
+            <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-200/15 bg-cyan-200/[0.07] text-cyan-200 text-[11px] font-medium mb-4">
+                  <Sparkles size={13} />
+                  {t.dashboard}
                 </div>
 
-                <div className="h-[270px]">
+                <h1 className="text-2xl sm:text-3xl xl:text-[34px] font-bold tracking-tight text-white">
+                  {t.welcome}, {studentName.split(" ")[0]}!
+                  <span className="inline-block ml-2">👋</span>
+                </h1>
 
-                  <ResponsiveContainer
-                    width="100%"
-                    height="100%"
+                <p className="text-sm text-slate-300 leading-6 mt-3 max-w-xl">
+                  {t.description}
+                </p>
+
+                <div className="flex flex-wrap gap-3 mt-6">
+                  <button
+                    onClick={() => goTo("/udyamsethu/student/opportunities")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-cyan-300 transition"
                   >
+                    {t.explore} <ArrowUpRight size={17} />
+                  </button>
 
-                    <AreaChart data={performanceData}>
+                  <button
+                    onClick={() => goTo("/udyamsethu/student/profile")}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm font-medium text-white hover:bg-white/10 transition"
+                  >
+                    <UserRound size={16} /> {t.completeProfile}
+                  </button>
+                </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-3 sm:min-w-[290px]">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
+                  <div className="w-9 h-9 rounded-xl bg-cyan-300/15 flex items-center justify-center text-cyan-200">
+                    <ShieldCheck size={19} />
+                  </div>
+                  <p className="text-2xl font-bold text-white mt-4">82%</p>
+                  <p className="text-xs text-slate-300 mt-1">Career readiness</p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-4">
+                  <div className="w-9 h-9 rounded-xl bg-violet-300/15 flex items-center justify-center text-violet-200">
+                    <Activity size={19} />
+                  </div>
+                  <p className="text-2xl font-bold text-white mt-4">+12.4%</p>
+                  <p className="text-xs text-slate-300 mt-1">Performance trend</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* STAT CARDS */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4 mb-6">
+            <StatCard
+              title={t.cgpa}
+              value="8.6"
+              detail={t.outOf}
+              icon={GraduationCap}
+              tone="cyan"
+              darkMode={darkMode}
+              onClick={() => goTo("/udyamsethu/student/academic-performance")}
+            />
+            <StatCard
+              title={t.attendance}
+              value="91%"
+              detail="Overall attendance"
+              icon={CheckCircle2}
+              tone="emerald"
+              darkMode={darkMode}
+              onClick={() => goTo("/udyamsethu/student/attendance")}
+            />
+            <StatCard
+              title={t.assessments}
+              value="18"
+              detail={t.completed}
+              icon={ClipboardCheck}
+              tone="violet"
+              darkMode={darkMode}
+              onClick={() => goTo("/udyamsethu/student/assessments")}
+            />
+            <StatCard
+              title={t.applicationsTitle}
+              value="12"
+              detail={t.active}
+              icon={BriefcaseBusiness}
+              tone="amber"
+              darkMode={darkMode}
+              onClick={() => goTo("/udyamsethu/student/applications")}
+            />
+          </section>
+
+          {/* PROFILE COMPLETION */}
+          <section className={`${surface} border rounded-2xl p-5 sm:p-6 mb-6`}>
+            <div className="flex flex-col md:flex-row md:items-center gap-5">
+              <div className="w-12 h-12 rounded-2xl bg-cyan-400/10 text-cyan-500 flex items-center justify-center shrink-0">
+                <UserRound size={24} />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">{t.profileTitle}</h2>
+                    <p className={`text-xs mt-1.5 leading-5 ${mutedText}`}>
+                      {t.profileDescription}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-cyan-500 shrink-0">
+                    80%
+                  </span>
+                </div>
+
+                <div className={`h-2.5 rounded-full overflow-hidden ${
+                  darkMode ? "bg-slate-700/70" : "bg-slate-100"
+                }`}>
+                  <div className="h-full w-[80%] rounded-full bg-gradient-to-r from-cyan-500 to-teal-400" />
+                </div>
+
+                <div className={`flex flex-wrap gap-x-5 gap-y-2 mt-3 text-[11px] ${mutedText}`}>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-emerald-500" />
+                    {t.profileReady}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 size={13} className="text-emerald-500" />
+                    {t.skillsReady}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock3 size={13} className="text-amber-500" />
+                    {t.resumeReady}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => goTo("/udyamsethu/student/profile")}
+                className="shrink-0 inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400/10 px-4 py-3 text-sm font-semibold text-cyan-500 hover:bg-cyan-400/15 transition"
+              >
+                {t.completeProfile} <ArrowUpRight size={16} />
+              </button>
+            </div>
+          </section>
+
+          {/* PERFORMANCE + ATTENDANCE */}
+          <section className="grid grid-cols-1 2xl:grid-cols-5 gap-5 mb-6">
+            <div className={`${surface} border rounded-2xl overflow-hidden 2xl:col-span-3 min-w-0`}>
+              <SectionHeader
+                title={t.academic}
+                subtitle={t.academicSub}
+                icon={TrendingUp}
+                darkMode={darkMode}
+              />
+
+              <div className="p-4 sm:p-6">
+                <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+                  <div>
+                    <p className={`text-xs ${mutedText}`}>Current academic score</p>
+                    <p className="text-3xl font-bold mt-1">
+                      8.6 <span className={`text-sm font-medium ${mutedText}`}>CGPA</span>
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-400/10 text-emerald-500 px-2.5 py-1.5 text-xs font-semibold">
+                    <TrendingUp size={14} /> +12.4%
+                  </span>
+                </div>
+
+                <div className="h-[240px] sm:h-[285px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={performanceData} margin={{ top: 10, right: 8, left: -20, bottom: 0 }}>
                       <defs>
-
-                        <linearGradient
-                          id="performanceFill"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-
-                          <stop
-                            offset="0%"
-                            stopColor="#06b6d4"
-                            stopOpacity={0.35}
-                          />
-
-                          <stop
-                            offset="100%"
-                            stopColor="#06b6d4"
-                            stopOpacity={0.02}
-                          />
-
+                        <linearGradient id="studentPerformanceGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.01} />
                         </linearGradient>
-
                       </defs>
-
                       <CartesianGrid
-                        strokeDasharray="3 3"
+                        strokeDasharray="3 5"
                         vertical={false}
-                        stroke={
-                          darkMode
-                            ? "#334155"
-                            : "#e2e8f0"
-                        }
+                        stroke={darkMode ? "#29364b" : "#e8edf4"}
                       />
-
                       <XAxis
                         dataKey="month"
                         axisLine={false}
                         tickLine={false}
-                        tick={{
-                          fontSize: 11,
-                          fill: "#94a3b8",
-                        }}
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
+                        dy={8}
                       />
-
                       <YAxis
                         domain={[0, 100]}
                         axisLine={false}
                         tickLine={false}
-                        tick={{
-                          fontSize: 11,
-                          fill: "#94a3b8",
+                        tick={{ fontSize: 11, fill: "#94a3b8" }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: darkMode ? "#10192b" : "#ffffff",
+                          border: `1px solid ${darkMode ? "#334155" : "#e2e8f0"}`,
+                          borderRadius: 12,
+                          color: darkMode ? "#fff" : "#0f172a",
+                          fontSize: 12,
                         }}
                       />
-
-                      <Tooltip />
-
                       <Area
                         type="monotone"
                         dataKey="score"
-                        stroke="#06b6d4"
+                        name="Performance"
+                        stroke="#22d3ee"
                         strokeWidth={3}
-                        fill="url(#performanceFill)"
+                        fill="url(#studentPerformanceGradient)"
+                        activeDot={{ r: 5, strokeWidth: 0 }}
                       />
-
                     </AreaChart>
-
                   </ResponsiveContainer>
-
                 </div>
-
               </div>
-
             </div>
 
-            {/* ATTENDANCE */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.attendanceTitle}
-                subtitle={t.attendanceSubtitle}
+            <div className={`${surface} border rounded-2xl overflow-hidden 2xl:col-span-2`}>
+              <SectionHeader
+                title={t.attendance}
+                subtitle={t.attendanceSub}
+                icon={CalendarDays}
+                darkMode={darkMode}
               />
 
-              <div className="p-5">
+              <div className="p-5 sm:p-6">
+                <div className="flex items-center gap-4 mb-7">
+                  <div className="w-[88px] h-[88px] rounded-full border-[8px] border-cyan-400/15 relative flex items-center justify-center shrink-0">
+                    <div className="absolute inset-[-8px] rounded-full border-[8px] border-transparent border-t-cyan-400 border-r-cyan-400 rotate-45" />
+                    <div className="text-center">
+                      <p className="text-xl font-bold">91%</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Excellent consistency</p>
+                    <p className={`text-xs leading-5 mt-1.5 ${mutedText}`}>
+                      Keep attending classes to maintain your academic progress.
+                    </p>
+                  </div>
+                </div>
 
                 <div className="space-y-5">
-
                   {attendanceData.map((item) => (
                     <div key={item.subject}>
-
-                      <div className="flex justify-between mb-2">
-
-                        <span className="text-xs font-medium">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <span className={`text-xs font-medium ${mutedText}`}>
                           {item.subject}
                         </span>
-
-                        <span className="text-xs font-semibold text-cyan-600">
-                          {item.attendance}%
-                        </span>
-
+                        <span className="text-xs font-semibold">{item.attendance}%</span>
                       </div>
-
-                      <div
-                        className={`
-                          h-2
-                          rounded-full
-                          ${darkMode
-                            ? "bg-slate-700"
-                            : "bg-slate-100"
-                          }
-                        `}
-                      >
-
+                      <div className={`h-2 rounded-full overflow-hidden ${
+                        darkMode ? "bg-slate-700/70" : "bg-slate-100"
+                      }`}>
                         <div
-                          className="h-full rounded-full bg-cyan-500"
-                          style={{
-                            width: `${item.attendance}%`,
-                          }}
+                          className={`h-full rounded-full ${
+                            item.attendance < 85
+                              ? "bg-amber-400"
+                              : "bg-gradient-to-r from-cyan-500 to-teal-400"
+                          }`}
+                          style={{ width: `${item.attendance}%` }}
                         />
-
                       </div>
-
                     </div>
                   ))}
-
                 </div>
-
               </div>
-
             </div>
+          </section>
 
-          </div>
-
-          {/* =================================================
-              ROW 2
-          ================================================= */}
-
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
-
-            {/* EVENTS */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.upcomingEvents}
-                subtitle={t.upcomingEventsSubtitle}
+          {/* EVENTS, SKILLS, CAREER READINESS */}
+          <section className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+            <div className={`${surface} border rounded-2xl overflow-hidden`}>
+              <SectionHeader
+                title={t.events}
+                subtitle={t.eventsSub}
+                icon={CalendarDays}
+                darkMode={darkMode}
               />
-
-              <div className="p-5 space-y-4">
-
-                {upcomingEvents.map((event) => (
-
-                  <div
-                    key={event.title}
-                    className="flex gap-3"
-                  >
-
-                    <div className="w-11 h-11 rounded-lg bg-cyan-50 flex flex-col items-center justify-center shrink-0">
-
-                      <CalendarDays
-                        size={17}
-                        className="text-cyan-600"
-                      />
-
+              <div className="p-5 space-y-5">
+                {events.map((event, index) => (
+                  <div key={event.title} className="flex items-start gap-3">
+                    <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center shrink-0 ${
+                      darkMode ? "bg-white/[0.045]" : "bg-slate-50"
+                    }`}>
+                      <CalendarDays size={17} className="text-cyan-500 mb-1" />
+                      <span className="text-[9px] font-semibold">{event.date.split(" ")[0]}</span>
                     </div>
-
-                    <div className="flex-1">
-
-                      <p className="text-sm font-semibold">
-                        {event.title}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold">{event.title}</p>
+                      <p className={`text-xs mt-1.5 ${mutedText}`}>
+                        {event.date} · {event.time}
                       </p>
-
-                      <p
-                        className={`text-xs ${textSecondary} mt-1`}
-                      >
-                        {event.date} • {event.time}
-                      </p>
-
-                      <span className="inline-block mt-2 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-[10px]">
+                      <span className={`inline-flex mt-2 rounded-md px-2 py-1 text-[10px] ${
+                        index === 0
+                          ? "bg-violet-400/10 text-violet-400"
+                          : index === 1
+                          ? "bg-cyan-400/10 text-cyan-500"
+                          : "bg-amber-400/10 text-amber-500"
+                      }`}>
                         {event.type}
                       </span>
-
                     </div>
-
                   </div>
-
                 ))}
-
               </div>
-
             </div>
 
-            {/* SKILLS */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.skillsProgress}
-                subtitle={t.skillsSubtitle}
+            <div className={`${surface} border rounded-2xl overflow-hidden`}>
+              <SectionHeader
+                title={t.skillProgress}
+                subtitle={t.skillSub}
+                icon={Target}
+                darkMode={darkMode}
+                action={() => goTo("/udyamsethu/student/skills")}
               />
-
               <div className="p-5 space-y-5">
+                <SkillProgress name="React.js" value={90} darkMode={darkMode} />
+                <SkillProgress name="JavaScript" value={85} darkMode={darkMode} />
+                <SkillProgress name="Java" value={78} darkMode={darkMode} />
+                <SkillProgress name="SQL" value={82} darkMode={darkMode} />
+                <SkillProgress name="Communication" value={75} darkMode={darkMode} />
 
-                <SkillProgress
-                  name="React.js"
-                  value={90}
-                />
-
-                <SkillProgress
-                  name="JavaScript"
-                  value={85}
-                />
-
-                <SkillProgress
-                  name="Java"
-                  value={78}
-                />
-
-                <SkillProgress
-                  name="SQL"
-                  value={82}
-                />
-
-                <SkillProgress
-                  name={
-                    language === "English"
-                      ? "Communication"
-                      : "ಸಂವಹನ"
-                  }
-                  value={75}
-                />
-
+                <button
+                  onClick={() => goTo("/udyamsethu/student/skills")}
+                  className="w-full mt-1 rounded-xl border border-slate-500/15 py-3 text-xs font-semibold text-cyan-500 hover:bg-cyan-400/[0.06] transition"
+                >
+                  Continue learning <ArrowUpRight size={14} className="inline ml-1" />
+                </button>
               </div>
-
             </div>
 
-            {/* CAREER READINESS */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.careerReadiness}
-                subtitle={t.careerSubtitle}
+            <div className={`${surface} border rounded-2xl overflow-hidden`}>
+              <SectionHeader
+                title={t.readiness}
+                subtitle={t.readinessSub}
+                icon={Award}
+                darkMode={darkMode}
               />
-
               <div className="p-5">
-
-                <div className="flex items-center justify-center">
-
-                  <div className="w-40 h-40 rounded-full border-[14px] border-cyan-500 flex items-center justify-center">
-
-                    <div className="text-center">
-
-                      <p className="text-3xl font-bold">
-                        82%
+                <div className="rounded-2xl bg-gradient-to-br from-cyan-400/[0.10] to-violet-500/[0.10] border border-cyan-400/10 p-5 mb-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className={`text-xs ${mutedText}`}>Overall score</p>
+                      <p className="text-3xl font-bold mt-1">82%</p>
+                      <p className="text-xs text-emerald-500 mt-2 flex items-center gap-1">
+                        <TrendingUp size={13} /> Moving forward
                       </p>
-
-                      <p
-                        className={`text-xs ${textSecondary}`}
-                      >
-                        {t.ready}
-                      </p>
-
                     </div>
-
+                    <div className="w-16 h-16 rounded-2xl bg-cyan-400/10 flex items-center justify-center">
+                      <Award size={30} className="text-cyan-500" />
+                    </div>
                   </div>
-
+                  <div className={`h-2 rounded-full mt-5 overflow-hidden ${
+                    darkMode ? "bg-slate-700" : "bg-slate-200"
+                  }`}>
+                    <div className="w-[82%] h-full rounded-full bg-gradient-to-r from-cyan-500 to-violet-400" />
+                  </div>
                 </div>
 
-                <div className="mt-5 space-y-3">
+                <ReadinessRow title={t.profileReady} value="Complete" />
+                <ReadinessRow title={t.resumeReady} value="Uploaded" />
+                <ReadinessRow title={t.skillsReady} value="Good progress" />
+                <ReadinessRow title={t.assessments} value="18 completed" />
 
-                  <ReadinessItem
-                    title={t.profile}
-                    value={t.complete}
-                  />
-
-                  <ReadinessItem
-                    title={t.resume}
-                    value={t.uploaded}
-                  />
-
-                  <ReadinessItem
-                    title={t.skills}
-                    value={t.good}
-                  />
-
-                  <ReadinessItem
-                    title={t.assessments}
-                    value={
-                      language === "English"
-                        ? "18 Completed"
-                        : "18 ಪೂರ್ಣಗೊಂಡಿದೆ"
-                    }
-                  />
-
-                </div>
-
+                <button
+                  onClick={() => goTo("/udyamsethu/student/academic-performance")}
+                  className="mt-4 w-full rounded-xl bg-cyan-400 py-3 text-xs font-semibold text-slate-950 hover:bg-cyan-300 transition"
+                >
+                  {t.viewPerformance}
+                </button>
               </div>
-
             </div>
+          </section>
 
-          </div>
-
-          {/* =================================================
-              RECOMMENDED OPPORTUNITIES
-          ================================================= */}
-
-          <div
-            className={`
-              ${card}
-              border
-              rounded-xl
-              mb-5
-            `}
-          >
-
-            <ChartHeader
-              title={t.recommendedOpportunities}
-              subtitle={t.recommendedSubtitle}
+          {/* RECOMMENDED OPPORTUNITIES */}
+          <section className={`${surface} border rounded-2xl overflow-hidden mb-6`}>
+            <SectionHeader
+              title={t.recommended}
+              subtitle={t.recommendedSub}
+              icon={BriefcaseBusiness}
+              darkMode={darkMode}
+              action={() => goTo("/udyamsethu/student/opportunities")}
+              actionLabel={t.viewAll}
             />
 
-            <div
-              className={`
-                divide-y
-                ${darkMode
-                  ? "divide-slate-700"
-                  : "divide-slate-100"
-                }
-              `}
-            >
-
-              {recommendedOpportunities.map((item) => (
-
-                <OpportunityCard
-                  key={item.title}
-                  item={item}
-                  darkMode={darkMode}
-                  deadlineText={t.deadline}
-                />
-
-              ))}
-
+            <div className="divide-y divide-slate-500/10">
+              {filteredOpportunities.length > 0 ? (
+                filteredOpportunities.map((item) => (
+                  <OpportunityRow
+                    key={item.title}
+                    item={item}
+                    darkMode={darkMode}
+                    deadlineLabel={t.deadline}
+                    onClick={() => goTo("/udyamsethu/student/opportunities")}
+                  />
+                ))
+              ) : (
+                <div className={`p-10 text-center text-sm ${mutedText}`}>
+                  <Search size={25} className="mx-auto mb-3 opacity-50" />
+                  {t.noResults}
+                </div>
+              )}
             </div>
 
-            <div
-              className={`
-                p-5
-                border-t
-                ${darkMode
-                  ? "border-slate-700"
-                  : "border-slate-100"
-                }
-              `}
-            >
-
-              <button className="text-sm font-semibold text-cyan-600 flex items-center gap-2">
-
-                {t.viewAllOpportunities}
-
-                <ArrowUpRight size={15} />
-
+            <div className={`p-4 sm:px-6 border-t ${
+              darkMode ? "border-white/[0.07]" : "border-slate-100"
+            }`}>
+              <button
+                onClick={() => goTo("/udyamsethu/student/opportunities")}
+                className="w-full sm:w-auto text-sm font-semibold text-cyan-500 hover:text-cyan-400 transition"
+              >
+                {t.viewAll} <ArrowUpRight size={15} className="inline ml-1" />
               </button>
-
             </div>
+          </section>
 
-          </div>
-
-          {/* =================================================
-              RECENT ACTIVITY
-          ================================================= */}
-
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-
-            {/* APPLICATION STATUS */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.recentApplications}
-                subtitle={t.recentApplicationsSubtitle}
+          {/* APPLICATIONS + QUICK ACTIONS */}
+          <section className="grid grid-cols-1 2xl:grid-cols-2 gap-5">
+            <div className={`${surface} border rounded-2xl overflow-hidden`}>
+              <SectionHeader
+                title={t.recent}
+                subtitle={t.recentSub}
+                icon={FileText}
+                darkMode={darkMode}
+                action={() => goTo("/udyamsethu/student/applications")}
+                actionLabel="View all"
               />
 
               <div className="p-5 space-y-5">
-
-                {applications.map((application) => (
-
-                  <ApplicationItem
+                {applicationData.map((application) => (
+                  <ApplicationRow
                     key={application.title}
-                    title={application.title}
-                    company={application.company}
-                    status={application.status}
-                    type={application.type}
+                    application={application}
+                    darkMode={darkMode}
                   />
-
                 ))}
 
+                <button
+                  onClick={() => goTo("/udyamsethu/student/applications")}
+                  className={`w-full rounded-xl border py-3 text-xs font-semibold transition ${
+                    darkMode
+                      ? "border-white/10 hover:bg-white/[0.04]"
+                      : "border-slate-200 hover:bg-slate-50"
+                  }`}
+                >
+                  Track all applications <ArrowUpRight size={14} className="inline ml-1" />
+                </button>
               </div>
-
             </div>
 
-            {/* QUICK ACTIONS */}
-
-            <div
-              className={`
-                ${card}
-                border
-                rounded-xl
-              `}
-            >
-
-              <ChartHeader
-                title={t.quickActions}
-                subtitle={t.quickActionsSubtitle}
+            <div className={`${surface} border rounded-2xl overflow-hidden`}>
+              <SectionHeader
+                title={t.quick}
+                subtitle={t.quickSub}
+                icon={Sparkles}
+                darkMode={darkMode}
               />
 
-              <div className="p-5 grid grid-cols-2 gap-3">
-
+              <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <QuickAction
                   icon={UserRound}
                   title={t.updateProfile}
-                  onClick={() => navigate("/udyamsethu/student/profile")}
+                  description="Manage your details"
+                  onClick={() => goTo("/udyamsethu/student/profile")}
+                  darkMode={darkMode}
                 />
-
                 <QuickAction
                   icon={FileText}
-                  title={t.uploadResume}
-                  onClick={() => navigate("/udyamsethu/student/resume")}
+                  title={t.resume}
+                  description="Create or improve"
+                  onClick={() => goTo("/udyamsethu/student/resume")}
+                  darkMode={darkMode}
                 />
-
                 <QuickAction
                   icon={ClipboardCheck}
                   title={t.takeAssessment}
-                  onClick={() => navigate("/udyamsethu/student/assessments")}
+                  description="Test your skills"
+                  onClick={() => goTo("/udyamsethu/student/assessments")}
+                  darkMode={darkMode}
                 />
-
                 <QuickAction
                   icon={Award}
-                  title={t.viewCertificates}
-                  onClick={() => navigate("/udyamsethu/student/certificates")}
+                  title={t.certificates}
+                  description="Show your achievements"
+                  onClick={() => goTo("/udyamsethu/student/certificates")}
+                  darkMode={darkMode}
                 />
-
                 <QuickAction
                   icon={BriefcaseBusiness}
-                  title={t.findInternship}
-                  onClick={() =>
-                    navigate("/udyamsethu/student/opportunities")}
+                  title={t.internship}
+                  description="Discover new roles"
+                  onClick={() => goTo("/udyamsethu/student/opportunities")}
+                  darkMode={darkMode}
                 />
-
                 <QuickAction
                   icon={BarChart3}
                   title={t.viewPerformance}
-                  onClick={() => navigate("/udyamsethu/student/academic-performance")
-                  }
+                  description="Review your progress"
+                  onClick={() => goTo("/udyamsethu/student/academic-performance")}
+                  darkMode={darkMode}
                 />
-
               </div>
-
             </div>
+          </section>
 
-          </div>
-
+          {/* FOOTER */}
+          <footer className={`flex flex-col sm:flex-row items-center justify-between gap-2 py-7 text-[11px] ${mutedText}`}>
+            <p>© {new Date().getFullYear()} Udyam Sethu. Student workspace.</p>
+            <p className="flex items-center gap-1.5">
+              <ShieldCheck size={13} className="text-emerald-500" />
+              Your learning journey, one step at a time.
+            </p>
+          </footer>
         </main>
-
       </div>
-
     </div>
   );
 };
 
 /* =========================================================
-   STUDENT STAT CARD
+   REUSABLE COMPONENTS
 ========================================================= */
 
-const StudentStatCard = ({
-  title,
-  value,
-  subtitle,
-  icon: Icon,
-  darkMode,
-  onClick
-}) => {
-  return (
-    <div
-      onClick={onClick}
-      className={`
-        ${darkMode
-          ? "bg-[#172033] border-slate-700"
-          : "bg-white border-slate-200"
-        }
-
-        border
-        rounded-xl
-        p-5
-        hover:shadow-md
-        hover:border-cyan-400
-        transition
-        cursor-pointer
-      `}
-    >
-
-      <div className="flex items-center justify-between">
-
-        <p
-          className={`
-            text-xs
-            ${darkMode
-              ? "text-slate-400"
-              : "text-slate-500"
-            }
-          `}
-        >
-          {title}
-        </p>
-
-        <div className="w-9 h-9 rounded-lg bg-cyan-50 flex items-center justify-center">
-
-          <Icon
-            size={18}
-            className="text-cyan-600"
-          />
-
-        </div>
-
-      </div>
-
-      <p className="text-2xl font-bold mt-4">
-        {value}
-      </p>
-
-      <p className="text-[11px] text-slate-400 mt-1">
-        {subtitle}
-      </p>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   CHART HEADER
-========================================================= */
-
-const ChartHeader = ({
-  title,
-  subtitle,
-}) => {
-  return (
-    <div className="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-
-      <div>
-
-        <h3 className="text-sm font-semibold">
-          {title}
-        </h3>
-
-        <p className="text-xs text-slate-400 mt-1">
-          {subtitle}
-        </p>
-
-      </div>
-
-      <button className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-
-        <ArrowUpRight
-          size={17}
-          className="text-slate-400"
-        />
-
-      </button>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   SKILL PROGRESS
-========================================================= */
-
-const SkillProgress = ({
-  name,
-  value,
-}) => {
-  return (
-    <div>
-
-      <div className="flex justify-between mb-2">
-
-        <span className="text-xs font-medium">
-          {name}
-        </span>
-
-        <span className="text-xs font-semibold text-cyan-600">
-          {value}%
-        </span>
-
-      </div>
-
-      <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full">
-
-        <div
-          className="h-full bg-cyan-500 rounded-full"
-          style={{
-            width: `${value}%`,
-          }}
-        />
-
-      </div>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   READINESS ITEM
-========================================================= */
-
-const ReadinessItem = ({
-  title,
-  value,
-}) => {
-  return (
-    <div className="flex items-center justify-between">
-
-      <div className="flex items-center gap-2">
-
-        <CheckCircle2
-          size={15}
-          className="text-emerald-500"
-        />
-
-        <span className="text-xs">
-          {title}
-        </span>
-
-      </div>
-
-      <span className="text-xs text-slate-400">
-        {value}
-      </span>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   OPPORTUNITY CARD
-========================================================= */
-
-const OpportunityCard = ({
-  item,
-  deadlineText,
-}) => {
-  return (
-    <div className="p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition">
-
-      <div className="flex gap-4">
-
-        <div className="w-11 h-11 rounded-xl bg-[#172033] flex items-center justify-center shrink-0">
-
-          <Building2
-            size={19}
-            className="text-cyan-400"
-          />
-
-        </div>
-
-        <div className="flex-1">
-
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
-
-            <div>
-
-              <h4 className="text-sm font-semibold">
-                {item.title}
-              </h4>
-
-              <p className="text-xs text-slate-400 mt-1">
-                {item.company}
-              </p>
-
-            </div>
-
-            <span className="w-fit px-2 py-1 rounded-full bg-cyan-50 text-cyan-600 text-[10px] font-semibold">
-              {item.type}
-            </span>
-
-          </div>
-
-          <div className="flex flex-wrap gap-4 mt-3 text-xs text-slate-500">
-
-            <span className="flex items-center gap-1">
-
-              <MapPin size={13} />
-
-              {item.location}
-
-            </span>
-
-            <span className="flex items-center gap-1">
-
-              <Clock3 size={13} />
-
-              {deadlineText}: {item.deadline}
-
-            </span>
-
-          </div>
-
-          <div className="flex flex-wrap gap-2 mt-3">
-
-            {item.skills.map((skill) => (
-
-              <span
-                key={skill}
-                className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md text-[10px] text-slate-500 dark:text-slate-300"
-              >
-                {skill}
-              </span>
-
-            ))}
-
-          </div>
-
-        </div>
-
-        <button className="hidden sm:flex w-9 h-9 border border-slate-200 dark:border-slate-700 rounded-lg items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700">
-
-          <ExternalLink size={15} />
-
-        </button>
-
-      </div>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   APPLICATION ITEM
-========================================================= */
-
-const ApplicationItem = ({
-  title,
-  company,
-  status,
-  type,
-}) => {
-
-  const styles = {
-
-    success: {
-      icon: CheckCircle2,
-      color: "text-emerald-500",
-      bg: "bg-emerald-50",
-    },
-
-    pending: {
-      icon: Clock3,
-      color: "text-amber-500",
-      bg: "bg-amber-50",
-    },
-
-    applied: {
-      icon: FileText,
-      color: "text-cyan-500",
-      bg: "bg-cyan-50",
-    },
-
-    rejected: {
-      icon: AlertCircle,
-      color: "text-red-500",
-      bg: "bg-red-50",
-    },
-
+const StatCard = ({ title, value, detail, icon: Icon, tone, darkMode, onClick }) => {
+  const tones = {
+    cyan: "bg-cyan-400/10 text-cyan-500",
+    emerald: "bg-emerald-400/10 text-emerald-500",
+    violet: "bg-violet-400/10 text-violet-500",
+    amber: "bg-amber-400/10 text-amber-500",
   };
 
-  const config = styles[type];
-
-  const Icon = config.icon;
-
-  return (
-    <div className="flex items-center gap-3">
-
-      <div
-        className={`
-          w-9
-          h-9
-          rounded-lg
-          flex
-          items-center
-          justify-center
-          ${config.bg}
-        `}
-      >
-
-        <Icon
-          size={17}
-          className={config.color}
-        />
-
-      </div>
-
-      <div className="flex-1 min-w-0">
-
-        <p className="text-xs font-semibold truncate">
-          {title}
-        </p>
-
-        <p className="text-[11px] text-slate-400 mt-1">
-          {company}
-        </p>
-
-      </div>
-
-      <span
-        className={`
-          text-[10px]
-          font-semibold
-          ${config.color}
-        `}
-      >
-        {status}
-      </span>
-
-    </div>
-  );
-};
-
-/* =========================================================
-   QUICK ACTION
-========================================================= */
-
-const QuickAction = ({
-  icon: Icon,
-  title,
-  onClick,
-}) => {
   return (
     <button
       onClick={onClick}
-      className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-cyan-400 hover:bg-cyan-50/50 dark:hover:bg-slate-800 transition text-left">
-
-      <div className="w-9 h-9 rounded-lg bg-cyan-50 flex items-center justify-center mb-3">
-
-        <Icon
-          size={18}
-          className="text-cyan-600"
-        />
-
+      className={`group text-left rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+        darkMode
+          ? "bg-[#141e32] border-white/[0.07] hover:border-cyan-400/30 hover:shadow-black/10"
+          : "bg-white border-slate-200 hover:border-cyan-300 hover:shadow-slate-200/60"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+          {title}
+        </p>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tones[tone]}`}>
+          <Icon size={20} />
+        </div>
       </div>
-
-      <p className="text-xs font-semibold">
-        {title}
-      </p>
-
+      <div className="flex items-baseline gap-2 mt-5">
+        <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <span className={`text-[11px] ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
+          {detail}
+        </span>
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <span className={`text-[10px] ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
+          View details
+        </span>
+        <ArrowUpRight
+          size={15}
+          className="text-slate-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan-500"
+        />
+      </div>
     </button>
   );
 };
+
+const SectionHeader = ({
+  title,
+  subtitle,
+  icon: Icon,
+  darkMode,
+  action,
+  actionLabel,
+}) => (
+  <div className={`flex items-center justify-between gap-3 px-5 py-5 border-b ${
+    darkMode ? "border-white/[0.07]" : "border-slate-100"
+  }`}>
+    <div className="flex items-center gap-3 min-w-0">
+      {Icon && (
+        <div className={`hidden sm:flex w-9 h-9 rounded-xl items-center justify-center shrink-0 ${
+          darkMode ? "bg-white/[0.045] text-cyan-400" : "bg-slate-50 text-cyan-600"
+        }`}>
+          <Icon size={18} />
+        </div>
+      )}
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold truncate">{title}</h2>
+        <p className={`text-xs mt-1 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+          {subtitle}
+        </p>
+      </div>
+    </div>
+
+    {action && (
+      <button
+        onClick={action}
+        className="shrink-0 text-xs font-semibold text-cyan-500 hover:text-cyan-400 transition"
+      >
+        {actionLabel || <ArrowUpRight size={17} />}
+      </button>
+    )}
+  </div>
+);
+
+const SkillProgress = ({ name, value, darkMode }) => (
+  <div>
+    <div className="flex items-center justify-between gap-3 mb-2">
+      <span className="text-xs font-medium">{name}</span>
+      <span className={`text-xs font-semibold ${darkMode ? "text-cyan-400" : "text-cyan-600"}`}>
+        {value}%
+      </span>
+    </div>
+    <div className={`h-2 rounded-full overflow-hidden ${
+      darkMode ? "bg-slate-700/70" : "bg-slate-100"
+    }`}>
+      <div
+        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-teal-400 transition-all duration-700"
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  </div>
+);
+
+const ReadinessRow = ({ title, value }) => (
+  <div className="flex items-center justify-between gap-3 py-2">
+    <span className="flex items-center gap-2 text-xs">
+      <CheckCircle2 size={15} className="text-emerald-500" />
+      {title}
+    </span>
+    <span className="text-[11px] text-slate-400">{value}</span>
+  </div>
+);
+
+const OpportunityRow = ({ item, darkMode, deadlineLabel, onClick }) => {
+  const tone = {
+    cyan: "bg-cyan-400/10 text-cyan-500",
+    violet: "bg-violet-400/10 text-violet-500",
+    amber: "bg-amber-400/10 text-amber-500",
+  }[item.color];
+
+  return (
+    <div className={`p-5 sm:px-6 transition ${
+      darkMode ? "hover:bg-white/[0.02]" : "hover:bg-slate-50/80"
+    }`}>
+      <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${tone}`}>
+          <Building2 size={21} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-semibold">{item.title}</h3>
+              <p className={`text-xs mt-1 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                {item.company}
+              </p>
+            </div>
+            <span className={`w-fit rounded-lg px-2.5 py-1 text-[10px] font-semibold ${tone}`}>
+              {item.type}
+            </span>
+          </div>
+
+          <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 text-xs ${
+            darkMode ? "text-slate-400" : "text-slate-500"
+          }`}>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={13} /> {item.location}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock3 size={13} /> {deadlineLabel}: {item.deadline}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-3">
+            {item.skills.map((skill) => (
+              <span
+                key={skill}
+                className={`rounded-md px-2 py-1 text-[10px] ${
+                  darkMode ? "bg-white/[0.05] text-slate-300" : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={onClick}
+          aria-label={`View ${item.title}`}
+          className={`self-start w-9 h-9 rounded-xl border flex items-center justify-center transition ${
+            darkMode
+              ? "border-white/10 hover:bg-cyan-400/10 hover:text-cyan-400"
+              : "border-slate-200 hover:bg-cyan-50 hover:text-cyan-600"
+          }`}
+        >
+          <ExternalLink size={15} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ApplicationRow = ({ application, darkMode }) => {
+  const styles = {
+    success: {
+      icon: CheckCircle2,
+      color: "text-emerald-500",
+      background: "bg-emerald-400/10",
+    },
+    pending: {
+      icon: Clock3,
+      color: "text-amber-500",
+      background: "bg-amber-400/10",
+    },
+    applied: {
+      icon: FileText,
+      color: "text-cyan-500",
+      background: "bg-cyan-400/10",
+    },
+    rejected: {
+      icon: X,
+      color: "text-red-500",
+      background: "bg-red-400/10",
+    },
+  };
+
+  const style = styles[application.type] || styles.applied;
+  const Icon = style.icon;
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${style.background}`}>
+        <Icon size={18} className={style.color} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold truncate">{application.title}</p>
+        <p className={`text-[11px] mt-1 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+          {application.company}
+        </p>
+      </div>
+      <span className={`text-[10px] font-semibold text-right ${style.color}`}>
+        {application.status}
+      </span>
+    </div>
+  );
+};
+
+const QuickAction = ({ icon: Icon, title, description, onClick, darkMode }) => (
+  <button
+    onClick={onClick}
+    className={`group min-w-0 rounded-xl border p-3 sm:p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/50 ${
+      darkMode
+        ? "border-white/[0.07] hover:bg-white/[0.035]"
+        : "border-slate-200 hover:bg-cyan-50/50"
+    }`}
+  >
+    <div className="w-10 h-10 rounded-xl bg-cyan-400/10 text-cyan-500 flex items-center justify-center mb-3 group-hover:bg-cyan-400/15 transition">
+      <Icon size={19} />
+    </div>
+    <p className="text-xs font-semibold leading-5">{title}</p>
+    <p className={`text-[10px] leading-4 mt-1 ${
+      darkMode ? "text-slate-400" : "text-slate-500"
+    }`}>
+      {description}
+    </p>
+  </button>
+);
 
 export default StudentDashboard;

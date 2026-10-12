@@ -25,6 +25,7 @@ import Settings from './studentDashboard/Settings';
 import SkillLearning from './studentDashboard/SkillLearning';
 import Resume from './quickActions/Resume';
 import Certificates from './quickActions/Certificates';
+import EmployerLogin from './pages/EmployerLogin';
 
 
 function App() {
@@ -42,7 +43,7 @@ function App() {
           <Route path='/udyamsethu/student' element={<StudentDashboard />} />
           <Route path='/udyamsethu/assessement' element={<Assessment />} />
           <Route path='/udyamsethu/institution' element={<InstitutionDashboard />} />
-          <Route path='/udyamsethu/adminlogin' element={<InstitutionAdminLogin />} />
+          <Route path='/udyamsethu/institution-login' element={<InstitutionAdminLogin />} />
           <Route path='/udyamsethu/forgot-password' element={<ForgotPassword />} />
           <Route path='/udyamsethu/reset-password/:token' element={<ResetPassword />} />
 
@@ -59,6 +60,8 @@ function App() {
 
           <Route path='/udyamsethu/student/resume' element={<Resume />} />
           <Route path='/udyamsethu/student/certificates' element={<Certificates />} />
+
+          <Route path='/udyamsethu/employer-login' element={<EmployerLogin />} />
 
         </Routes>
       </BrowserRouter>
