@@ -26,6 +26,7 @@ import SkillLearning from './studentDashboard/SkillLearning';
 import Resume from './quickActions/Resume';
 import Certificates from './quickActions/Certificates';
 import EmployerLogin from './pages/EmployerLogin';
+import EmployerRegister from './EmployeeePage/EmployerRegister';
 
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
 
           <Route path='/udyamsethu/employer-login' element={<EmployerLogin />} />
 
+          <Route path='/udyamsethu/employer-register' element={<EmployerRegister />} />
         </Routes>
       </BrowserRouter>
     </>

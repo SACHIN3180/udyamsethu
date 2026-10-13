@@ -40,7 +40,7 @@ const InstitutionAdminLogin = () => {
     console.log("Institution Admin Login:", formData);
 
     // After successful API login:
-    navigate("/udyamsethu/institution-dashboard");
+    navigate("/udyamsethu/institution");
   };
 
   return (

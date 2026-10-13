@@ -54,7 +54,7 @@ const EmployerLogin = () => {
             remember: formData.remember,
         });
 
-        navigate("/udyamsethu/company", {
+        navigate("/udyamsethu/employer-dashboard", {
             replace: true,
             state: {
                 email,
