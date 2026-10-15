@@ -11,6 +11,8 @@ import {
     Users,
     ChartNoAxesCombined,
     Building2,
+    Clock,
+    AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo (1).png";
@@ -19,6 +21,8 @@ const EmployerLogin = () => {
     const navigate = useNavigate();
 
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [statusType, setStatusType] = useState(null);
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -37,8 +41,10 @@ const EmployerLogin = () => {
         setError("");
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setStatusType(null);
 
         const email = formData.email.trim();
         const password = formData.password;
@@ -48,19 +54,52 @@ const EmployerLogin = () => {
             return;
         }
 
-        // Frontend-only navigation. No credentials are verified.
-        console.log("Employer login submitted:", {
-            email,
-            remember: formData.remember,
-        });
+        setLoading(true);
 
-        navigate("/udyamsethu/employer-dashboard", {
-            replace: true,
-            state: {
-                email,
-                role: "employer",
-            },
-        });
+        try {
+            const response = await fetch("http://localhost:5000/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (data.status === "pending") {
+                    setStatusType("pending");
+                    setError(data.message || "Your registration is currently pending administrator approval.");
+                    return;
+                }
+                if (data.status === "rejected") {
+                    setStatusType("rejected");
+                    setError(data.message || "Your registration request was rejected by the administrator.");
+                    return;
+                }
+                if (data.status === "suspended") {
+                    setStatusType("suspended");
+                    setError(data.message || "Your account has been suspended by the administrator.");
+                    return;
+                }
+                throw new Error(data.message || "Invalid work email or password.");
+            }
+
+            // Successfully approved and logged in!
+            localStorage.setItem("employerToken", data.token);
+            localStorage.setItem("employerUser", JSON.stringify(data.user));
+
+            navigate("/udyamsethu/employer-dashboard", {
+                replace: true,
+                state: {
+                    user: data.user,
+                    role: "employer",
+                },
+            });
+        } catch (err) {
+            setError(err.message || "Unable to sign in. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -308,23 +347,49 @@ const EmployerLogin = () => {
                                 </label>
                             </div>
 
-                            {/* ERROR MESSAGE */}
-                            {error && (
+                            {/* APPROVAL STATUS & ERROR MESSAGES */}
+                            {statusType === "pending" && (
                                 <div
                                     role="alert"
-                                    className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+                                    className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900"
                                 >
-                                    {error}
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 mt-0.5">
+                                            <Clock size={16} />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
+                                                Awaiting Administrator Approval
+                                            </p>
+                                            <p className="mt-1 text-xs leading-5 text-amber-900">
+                                                {error}
+                                            </p>
+                                            <p className="mt-2 text-[11px] text-amber-700/90 bg-amber-100/60 rounded px-2 py-1">
+                                                💡 When the administrator accepts your registration in the Admin Portal, you will be able to log in immediately.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {error && statusType !== "pending" && (
+                                <div
+                                    role="alert"
+                                    className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2.5"
+                                >
+                                    <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                                    <span>{error}</span>
                                 </div>
                             )}
 
                             {/* SUBMIT */}
                             <button
                                 type="submit"
-                                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#17152F] font-semibold text-white shadow-lg shadow-violet-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-violet-950 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-violet-500/20"
+                                disabled={loading}
+                                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#17152F] font-semibold text-white shadow-lg shadow-violet-950/15 transition duration-200 hover:-translate-y-0.5 hover:bg-violet-950 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-violet-500/20 disabled:cursor-not-allowed disabled:opacity-70"
                             >
-                                Sign in to Employer Portal
-                                <ArrowRight size={18} />
+                                {loading ? "Verifying Credentials..." : "Sign in to Employer Portal"}
+                                {!loading && <ArrowRight size={18} />}
                             </button>
                         </form>
 

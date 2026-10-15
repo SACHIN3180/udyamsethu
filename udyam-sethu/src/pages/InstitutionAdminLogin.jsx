@@ -10,6 +10,8 @@ import {
   BarChart3,
   Users,
   GraduationCap,
+  Clock,
+  AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo (1).png";
@@ -18,6 +20,9 @@ const InstitutionAdminLogin = () => {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [statusType, setStatusType] = useState(null);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -32,15 +37,66 @@ const InstitutionAdminLogin = () => {
       ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
+    setError("");
+    setStatusType(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setStatusType(null);
 
-    console.log("Institution Admin Login:", formData);
+    const email = formData.email.trim();
+    const password = formData.password;
 
-    // After successful API login:
-    navigate("/udyamsethu/institution");
+    if (!email || !password) {
+      setError("Please provide your official email and password.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.status === "pending") {
+          setStatusType("pending");
+          setError(data.message || "Your institution registration is pending administrator approval.");
+          return;
+        }
+        if (data.status === "rejected") {
+          setStatusType("rejected");
+          setError(data.message || "Your institution registration request was rejected by the administrator.");
+          return;
+        }
+        if (data.status === "suspended") {
+          setStatusType("suspended");
+          setError(data.message || "Your institution account has been suspended.");
+          return;
+        }
+        throw new Error(data.message || "Invalid official email or password.");
+      }
+
+      // Successfully authenticated & approved!
+      localStorage.setItem("institutionToken", data.token);
+      localStorage.setItem("institutionUser", JSON.stringify(data.user));
+
+      navigate("/udyamsethu/institution", {
+        replace: true,
+        state: { user: data.user, role: "institution" },
+      });
+    } catch (err) {
+      setError(err.message || "Failed to sign in. Please verify your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -475,14 +531,51 @@ const InstitutionAdminLogin = () => {
 
               </div>
 
+              {/* =================================================
+                  APPROVAL STATUS & ERROR MESSAGES
+              ================================================== */}
+
+              {statusType === "pending" && (
+                <div
+                  role="alert"
+                  className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700 mt-0.5">
+                      <Clock size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wide text-amber-800">
+                        Awaiting Administrator Approval
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-amber-900">
+                        {error}
+                      </p>
+                      <p className="mt-2 text-[11px] text-amber-700/90 bg-amber-100/60 rounded px-2 py-1">
+                        💡 Once the platform administrator accepts your registration in the Admin Portal, you can sign in directly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {error && statusType !== "pending" && (
+                <div
+                  role="alert"
+                  className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-start gap-2.5"
+                >
+                  <AlertCircle size={18} className="text-red-500 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               {/* =================================================
                   LOGIN BUTTON
               ================================================== */}
 
               <button
-                onClick={() => navigate("/udyamsethu/institution")}
                 type="submit"
+                disabled={loading}
                 className="
                   w-full
                   h-12
@@ -502,12 +595,12 @@ const InstitutionAdminLogin = () => {
                   hover:shadow-xl
                   hover:-translate-y-[1px]
                   cursor-pointer
+                  disabled:opacity-60
+                  disabled:cursor-not-allowed
                 "
               >
-
-                Sign in to Admin Portal
-
-                <ArrowRight size={18} />
+                {loading ? "Verifying Credentials..." : "Sign in to Institution Portal"}
+                {!loading && <ArrowRight size={18} />}
 
               </button>
 
@@ -541,7 +634,21 @@ const InstitutionAdminLogin = () => {
 
             </div>
 
+            {/* REGISTER */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-slate-500">
+                Don't have an institution admin account?
 
+                <button
+                  type="button"
+                  onClick={() => navigate("/udyamsethu/institution/register")}
+                  className="ml-1 font-semibold text-cyan-600 hover:text-cyan-700 hover:underline cursor-pointer"
+                >
+                  Register
+                </button>
+              </p>
+            </div>
+            
             {/* =================================================
                 SUPPORT
             ================================================== */}

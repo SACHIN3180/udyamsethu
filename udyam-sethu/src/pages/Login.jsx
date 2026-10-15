@@ -190,7 +190,7 @@ const Login = () => {
           <div className="mb-8">
 
             <p className="text-sm font-medium text-cyan-600 mb-2">
-              WELCOME BACK
+              STUDENT PORTAL
             </p>
 
             <h2 className="text-3xl font-bold text-slate-900">
