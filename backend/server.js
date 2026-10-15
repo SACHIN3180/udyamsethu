@@ -9,6 +9,7 @@ const skillsRoutes = require("./routes/skillsRoutes");
 const reviewerRoutes = require("./routes/reviewerRoutes");
 const studentProfileRoutes = require("./routes/studentProfileRoutes")
 const resumeRoutes = require("./routes/resumeRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 
@@ -64,6 +65,9 @@ app.use("/api/student", studentProfileRoutes)
 
 //Resume
 app.use("/api/resumes", resumeRoutes);
+
+// Admin Routes (Control Students, Employers, Institutions, Approvals, Gigs)
+app.use("/api/admin", adminRoutes);
 
 //Start Server
 app.listen(PORT, () => {
